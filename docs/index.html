@@ -797,8 +797,15 @@
       msg.textContent = 'Please enter a valid email address.';
       return;
     }
+    
+    // Open mail client with prefilled subject and body
+    var subject = encodeURIComponent('Interest in Acacia - Kotlin Language Efficiency Tool');
+    var body = encodeURIComponent('Hi,\n\nI\'m interested in learning more about Acacia and would like to join the waitlist for early access.\n\nMy email: ' + email + '\n\nLooking forward to hearing from you!\n\nBest regards');
+    var mailtoLink = 'mailto:raju348636@gmail.com?subject=' + subject + '&body=' + body;
+    window.location.href = mailtoLink;
+    
     msg.style.color = '#0F6E56';
-    msg.textContent = "You're on the list. We'll be in touch soon!";
+    msg.textContent = "Opening your mail client...";
     document.getElementById('email-input').value = '';
   }
 </script>
