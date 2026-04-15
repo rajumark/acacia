@@ -14,7 +14,7 @@ Template repository for modern Android Gradle Plugin Project.
   * Gradle Plugin Publish Plugin
   * Gradle Signing Plugin
 
-## Publish Plugin
+## Publish Plugin 
 
 docs: https://docs.gradle.org/8.7/userguide/publishing_gradle_plugins.html
 
