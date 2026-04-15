@@ -1,0 +1,160 @@
+
+## Yes. This is the smartest approach.
+
+Your lib **introspects the actual `Modifier` class** available in that project — reads all extension functions via KSP — and generates ComposeWind wrappers automatically. Zero hardcoding. Always in sync with whatever Compose version the project uses.
+
+---
+
+## How it works
+
+```
+Dev adds ComposeWind to project
+         │
+         ▼
+KSP scans classpath
+         │
+         ├── finds androidx.compose.ui.Modifier
+         ├── finds ALL extension functions on Modifier
+         │   (from compose-ui, compose-foundation,
+         │    compose-material3, AND any custom ones)
+         │
+         ▼
+KSP generates CwModifierExtensions.kt
+         │
+         ├── .fillMaxWidth()  →  .wFull()
+         ├── .padding(16.dp)  →  .p(4)
+         ├── .clip(...)       →  .roundLg()
+         ├── .clickable()     →  .clickable()
+         └── YourCustomMod()  →  .cwYourCustomMod()
+```
+
+Custom project extensions get wrapped too — automatically. That's the killer feature.
+
+---
+
+## KSP strategy
+
+```kotlin
+// CwProcessorProvider.kt
+class CwProcessor(val env: SymbolProcessingEnvironment) : SymbolProcessor {
+
+    override fun process(resolver: Resolver): List<KSAnnotated> {
+
+        // 1. find Modifier class in classpath
+        val modifierClass = resolver
+            .getClassDeclarationByName("androidx.compose.ui.Modifier")
+
+        // 2. find ALL extension functions on Modifier
+        //    this includes compose-ui, foundation,
+        //    material3, AND the project's own extensions
+        val extensions = resolver
+            .getAllFiles()
+            .flatMap { it.declarations }
+            .filterIsInstance<KSFunctionDeclaration>()
+            .filter { fn ->
+                fn.extensionReceiver
+                  ?.resolve()
+                  ?.declaration
+                  ?.qualifiedName
+                  ?.asString() == "androidx.compose.ui.Modifier"
+            }
+
+        // 3. generate a CW wrapper for each one
+        extensions.forEach { fn ->
+            generate(fn)
+        }
+
+        return emptyList()
+    }
+}
+```
+
+---
+
+## What gets generated per function
+
+```kotlin
+// KSP found:  fun Modifier.fillMaxWidth(...) 
+// KSP found:  fun Modifier.padding(all: Dp)
+// KSP found:  fun Modifier.clip(shape: Shape)
+
+// Generated automatically:
+fun Modifier.wFull() = this.fillMaxWidth()
+fun Modifier.p(scale: Int) = this.padding((scale * 4).dp)
+fun Modifier.roundLg() = this.clip(RoundedCornerShape(12.dp))
+
+// Project's OWN custom modifier — also picked up:
+// fun Modifier.shimmer()  →  
+fun Modifier.cwShimmer() = this.shimmer()
+```
+
+---
+
+## The naming strategy KSP uses
+
+KSP needs a naming rule to convert function names to CW names. Keep it simple:
+
+```
+fillMaxWidth()          →  wFull()
+fillMaxHeight()         →  hFull()
+fillMaxSize()           →  fill()
+padding(all)            →  p(scale)
+padding(horizontal)     →  px(scale)
+padding(vertical)       →  py(scale)
+background(color)       →  bg(color)
+clip(shape)             →  round(shape)
+clickable()             →  clickable()
+alpha(float)            →  alpha(float)
+[unknown/custom]        →  cw + PascalCase of original name
+```
+
+Unknown functions get `cw` prefix — so nothing is lost, nothing breaks, everything gets a wrapper.
+
+---
+
+## Why this beats every other approach
+
+| Approach | Stays in sync with Compose updates | Picks up custom modifiers | Hardcoding |
+|---|---|---|---|
+| Hardcoded map | No | No | Yes |
+| tokens.yml | No | No | Yes |
+| **KSP classpath scan** | **Yes** | **Yes** | **Zero** |
+
+New Compose version ships a new modifier → your lib picks it up on next build automatically. Dev writes a custom modifier → wrapped automatically. You write zero new code.
+
+**Update your agent prompt with this as the core KSP strategy.** This is the right foundation.
+
+For exactly what you described — scan Modifier classpath, generate wrappers — here's what you actually need:
+
+---
+
+## Need ✅
+
+**KSP** — the entire engine. Scans classpath, finds all Modifier extensions, generates the wrapper functions. This is 80% of the project.
+
+**Gradle Plugin** — wires KSP into the dev's project automatically. Dev adds one line, gets everything. Without this, setup is too manual.
+
+**Runtime library (tiny)** — just declares the `.cw()` string variant and holds any helper types KSP needs to reference in generated code. Maybe 50 lines total.
+
+---
+
+## Do NOT need ❌
+
+**Compiler Plugin (K2/IR)** — you're not transforming syntax or adding new language constructs. KSP generation is enough. K2 plugin adds months of complexity for zero extra benefit at v1.
+
+**IDE Extension** — since you're generating real Kotlin functions, the IDE already understands them natively. Autocomplete, go-to-definition, all work for free because the generated `.kt` files are real Kotlin.
+
+**Annotation Processor (KAPT)** — KSP replaces this entirely. Never use KAPT for new projects.
+
+---
+
+## Final stack
+
+```
+composewind/
+├── composewind-runtime/        ← tiny, .cw() lives here
+├── composewind-ksp/            ← the real engine
+└── composewind-gradle-plugin/  ← wires everything together
+```
+
+Three modules. That's it. No annotations module even needed since you're not annotating anything — KSP scans classpath directly.

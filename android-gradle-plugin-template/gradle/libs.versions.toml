@@ -1,0 +1,27 @@
+[versions]
+sampleplugin = "0.1.0"
+kotlin = "2.3.0"
+gradle-android = "9.1.0"
+gradle-jvmToolchain = "21"
+
+[libraries]
+kotlin-gradle = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+android-gradle = { module = "com.android.tools.build:gradle", version.ref = "gradle-android" }
+androidx-appcompat = { module = "androidx.appcompat:appcompat", version = "1.7.0" }
+androidx-lifecycle = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version = "2.10.0" }
+compose-bom = { group = "androidx.compose", name = "compose-bom", version = "2026.03.01" }
+compose-activity = { module = "androidx.activity:activity-compose", version = "1.13.0" }
+compose-material3 = { module = "androidx.compose.material3:material3" }
+compose-uiTooling = { module = "androidx.compose.ui:ui-tooling" }
+
+[bundles]
+compose = ["compose-activity", "compose-material3", "compose-uiTooling"]
+
+[plugins]
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+android-application = { id = "com.android.application", version.ref = "gradle-android" }
+android-library = { id = "com.android.kotlin.multiplatform.library", version.ref = "gradle-android" }
+publish = { id = "com.gradle.plugin-publish", version = "2.1.1" }
+sampleplugin = { id = "org.sample.plugin", version.ref = "sampleplugin" }
