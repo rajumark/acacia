@@ -1,4 +1,4 @@
-package org.sample
+package io.acacia
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.provider.Property

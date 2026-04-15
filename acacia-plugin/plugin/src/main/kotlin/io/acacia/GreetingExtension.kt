@@ -1,4 +1,4 @@
-package org.sample
+package io.acacia
 
 abstract class GreetingExtension {
     var who: String? = null

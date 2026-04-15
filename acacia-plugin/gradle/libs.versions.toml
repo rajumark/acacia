@@ -24,4 +24,4 @@ compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "
 android-application = { id = "com.android.application", version.ref = "gradle-android" }
 android-library = { id = "com.android.kotlin.multiplatform.library", version.ref = "gradle-android" }
 publish = { id = "com.gradle.plugin-publish", version = "2.1.1" }
-sampleplugin = { id = "org.sample.plugin", version.ref = "sampleplugin" }
+sampleplugin = { id = "io.acacia", version.ref = "sampleplugin" }
