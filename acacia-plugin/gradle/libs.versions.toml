@@ -2,7 +2,7 @@
 sampleplugin = "0.1.0"
 kotlin = "2.3.0"
 gradle-android = "9.1.0"
-gradle-jvmToolchain = "21"
+gradle-jvmToolchain = "17"
 
 [libraries]
 kotlin-gradle = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }

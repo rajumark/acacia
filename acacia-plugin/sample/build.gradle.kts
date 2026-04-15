@@ -21,7 +21,7 @@ kotlin {
 }
 
 greeting {
-    who = "mate"
+    who = "Acacia"
 }
 
 dependencies {
