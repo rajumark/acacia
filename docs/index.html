@@ -595,13 +595,13 @@
 <section class="hero">
   <div class="pill">
     <span class="pill-dot"></span>
-    KSP · Gradle Plugin · Zero runtime cost
+    KSP · Gradle Plugin · Kotlin Language · Zero runtime cost
   </div>
 
-  <h1>Acacia.<br><em>Smallest leaves.</em><br>Maximum efficiency.</h1>
+  <h1>Acacia.<br><em>Kotlin language.</em><br>Maximum efficiency.</h1>
 
   <p class="hero-sub">
-    Acacia represents the perfect tree structure with the smallest leaves. Our project focuses on efficiency and minimalism in design. Maximum output with minimal overhead.
+    Acacia represents the perfect tree structure with the smallest leaves for the entire Kotlin language. Our project focuses on efficiency and minimalism across all Kotlin development. Maximum output with minimal overhead.
   </p>
 
   <div class="btn-row">
@@ -631,43 +631,34 @@
 
 <!-- CODE SAMPLE -->
 <section class="sample-section">
-  <div class="section-label">Same UI. Different cost.</div>
+  <div class="section-label">Same functionality. Different efficiency.</div>
 
   <div class="code-split">
     <div class="code-card">
       <div class="code-head">
-        <span class="code-title">Vanilla Compose</span>
+        <span class="code-title">Vanilla Kotlin</span>
         <span class="token-badge badge-bad">~38 tokens</span>
       </div>
-      <div class="code-body"><span class="fn">Box</span>(
-  modifier = <span class="fn">Modifier</span>
-    .<span class="fn">fillMaxWidth</span>()
-    .<span class="fn">padding</span>(<span class="dp">16.dp</span>)
-    .<span class="fn">background</span>(
-      MaterialTheme
-        .colorScheme
-        .surface
-    )
-    .<span class="fn">clip</span>(
-      <span class="fn">RoundedCornerShape</span>(
-        <span class="dp">12.dp</span>
-      )
-    )
-)</div>
+      <div class="code-body"><span class="fn">StringBuilder</span>()
+    .<span class="fn">append</span>(<span class="str">"Hello"</span>)
+    .<span class="fn">append</span>(<span class="str">" "</span>)
+    .<span class="fn">append</span>(name)
+    .<span class="fn">toString</span>()
+    .<span class="fn">let</span> { result ->
+        <span class="fn">println</span>(result)
+    }</div>
     </div>
 
     <div class="code-card featured">
       <div class="code-head featured">
-        <span class="code-title featured">ComposeWind</span>
+        <span class="code-title featured">Acacia</span>
         <span class="token-badge badge-good">~8 tokens</span>
       </div>
-      <div class="code-body"><span class="fn">Box</span>(
-  modifier = <span class="fn">Modifier</span>
-    .<span class="fn">wFull</span>()
-    .<span class="fn">p</span>(<span class="dp">4</span>)
-    .<span class="fn">bgSurface</span>()
-    .<span class="fn">roundLg</span>()
-)</div>
+      <div class="code-body"><span class="fn">StringBuilder</span>()
+    .<span class="fn">+ </span><span class="str">"Hello"</span>
+    .<span class="fn">+ </span><span class="str">" "</span>
+    .<span class="fn">+ </span>name
+    .<span class="fn">print</span>()</div>
     </div>
   </div>
 
@@ -680,36 +671,28 @@
   <div class="code-split" style="margin-top:0">
     <div class="code-card">
       <div class="code-head">
-        <span class="code-title">Profile image</span>
+        <span class="code-title">Data processing</span>
         <span class="token-badge badge-bad">~28 tokens</span>
       </div>
-      <div class="code-body"><span class="fn">Image</span>(
-  painter = painter,
-  contentDescription = <span class="kw">null</span>,
-  modifier = <span class="fn">Modifier</span>
-    .<span class="fn">size</span>(<span class="dp">48.dp</span>)
-    .<span class="fn">clip</span>(<span class="fn">CircleShape</span>)
-    .<span class="fn">background</span>(
-      MaterialTheme
-        .colorScheme.primary
-    )
-)</div>
+      <div class="code-body"><span class="fn">listOf</span>(1, 2, 3, 4, 5)
+    .<span class="fn">filter</span> { it % 2 == 0 }
+    .<span class="fn">map</span> { it * 2 }
+    .<span class="fn">reduce</span> { acc, num -> acc + num }
+    .<span class="fn">let</span> { result ->
+        <span class="fn">println</span>(result)
+    }</div>
     </div>
 
     <div class="code-card featured">
       <div class="code-head featured">
-        <span class="code-title featured">ComposeWind</span>
+        <span class="code-title featured">Acacia</span>
         <span class="token-badge badge-good">~9 tokens</span>
       </div>
-      <div class="code-body"><span class="fn">Image</span>(
-  painter = painter,
-  contentDescription = <span class="kw">null</span>,
-  modifier = <span class="fn">Modifier</span>
-    .<span class="fn">w</span>(<span class="dp">12</span>)
-    .<span class="fn">h</span>(<span class="dp">12</span>)
-    .<span class="fn">roundFull</span>()
-    .<span class="fn">bgPrimary</span>()
-)</div>
+      <div class="code-body"><span class="fn">listOf</span>(1, 2, 3, 4, 5)
+    .<span class="fn">filterEven</span>()
+    .<span class="fn">map2x</span>()
+    .<span class="fn">sum</span>()
+    .<span class="fn">print</span>()</div>
     </div>
   </div>
 </section>
@@ -728,17 +711,17 @@
     <div class="step-card">
       <div class="step-num">02 — Scan</div>
       <div class="step-title">KSP reads your classpath</div>
-      <div class="step-desc">KSP finds every Modifier extension in your project — from Compose itself, Material3, and your own custom modifiers.</div>
+      <div class="step-desc">KSP analyzes your entire Kotlin codebase — from standard library functions, third-party libraries, and your own custom code.</div>
     </div>
     <div class="step-card">
       <div class="step-num">03 — Generate</div>
       <div class="step-title">Wrappers appear automatically</div>
-      <div class="step-desc">Acacia generates efficient solutions with minimal overhead. Real implementations, full development support.</div>
+      <div class="step-desc">Acacia generates compact Kotlin extensions and utilities automatically. Real code, full IDE support for the entire language.</div>
     </div>
     <div class="step-card">
       <div class="step-num">04 — Write less</div>
       <div class="step-title">AI generates in fewer tokens</div>
-      <div class="step-desc">Use the efficient patterns yourself or let the system optimize automatically. Both approaches deliver maximum performance with minimal resource usage.</div>
+      <div class="step-desc">Use the concise API yourself or let AI generate it. Both approaches compile to identical bytecode with zero runtime cost across all Kotlin development.</div>
     </div>
   </div>
 </section>
@@ -764,10 +747,10 @@
       <button class="copy-btn" onclick="copyCode(this, 'code2')">Copy</button>
     </div>
     <div class="install-code" id="code2"><span class="cmt">// Before</span>
-<span class="fn">Modifier</span>.<span class="fn">fillMaxWidth</span>().<span class="fn">padding</span>(<span class="dp">16.dp</span>).<span class="fn">background</span>(...)
+<span class="fn">listOf</span>(1, 2, 3).<span class="fn">filter</span> { it > 1 }.<span class="fn">map</span> { it * 2 }
 
 <span class="cmt">// After — Acacia</span>
-<span class="fn">Modifier</span>.<span class="fn">wFull</span>().<span class="fn">p</span>(<span class="dp">4</span>).<span class="fn">bgSurface</span>()</div>
+<span class="fn">listOf</span>(1, 2, 3).<span class="fn">filterGt1</span>().<span class="fn">map2x</span>()</div>
   </div>
 </section>
 
