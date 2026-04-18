@@ -145,8 +145,8 @@ class AsmModifierParser(private val project: Project) {
                 // Skip first parameter (the Modifier receiver)
                 for (i in 1 until argumentTypes.size) {
                     val argType = argumentTypes[i]
-                    val paramName = "param$i" // ASM doesn't preserve parameter names without debug info
                     val typeName = simplifyTypeName(argType.className)
+                    val paramName = generateParameterName(methodName, i, typeName)
                     
                     parameters.add(
                         ModifierFunction.Parameter(
@@ -176,12 +176,85 @@ class AsmModifierParser(private val project: Project) {
             return when (className) {
                 "androidx.compose.ui.unit.Dp" -> "Dp"
                 "androidx.compose.ui.graphics.Color" -> "Color"
+                "androidx.compose.ui.graphics.Shape" -> "Shape"
+                "androidx.compose.ui.graphics.Brush" -> "Brush"
                 "androidx.compose.foundation.layout.Arrangement" -> "Arrangement"
                 "androidx.compose.foundation.layout.Alignment" -> "Alignment"
+                "androidx.compose.foundation.BorderStroke" -> "BorderStroke"
+                "androidx.compose.ui.unit.DpOffset" -> "DpOffset"
+                "androidx.compose.ui.geometry.Offset" -> "Offset"
+                "androidx.compose.ui.geometry.Size" -> "Size"
+                "androidx.compose.ui.geometry.Rect" -> "Rect"
+                "androidx.compose.ui.unit.TextUnit" -> "TextUnit"
+                "androidx.compose.ui.text.font.FontWeight" -> "FontWeight"
+                "androidx.compose.ui.text.TextStyle" -> "TextStyle"
+                "androidx.compose.ui.graphics.vector.ImageVector" -> "ImageVector"
+                "androidx.compose.ui.graphics.painter.Painter" -> "Painter"
                 "kotlin.Float" -> "Float"
                 "kotlin.Int" -> "Int"
+                "kotlin.Double" -> "Double"
                 "kotlin.Boolean" -> "Boolean"
+                "kotlin.String" -> "String"
                 else -> className.substringAfterLast(".")
+            }
+        }
+        
+        /**
+         * Generates meaningful parameter names based on function name and type.
+         */
+        private fun generateParameterName(functionName: String, paramIndex: Int, paramType: String): String {
+            return when (functionName) {
+                "padding" -> when (paramIndex) {
+                    1 -> "horizontal"
+                    2 -> "vertical"
+                    3 -> "start"
+                    4 -> "top"
+                    5 -> "end"
+                    6 -> "bottom"
+                    else -> "param$paramIndex"
+                }
+                "paddingHorizontal", "paddingVertical", "paddingStart", 
+                "paddingTop", "paddingEnd", "paddingBottom" -> "padding"
+                "size" -> when (paramIndex) {
+                    1 -> "width"
+                    2 -> "height"
+                    else -> "param$paramIndex"
+                }
+                "width" -> "width"
+                "height" -> "height"
+                "background" -> "color"
+                "border" -> when (paramIndex) {
+                    1 -> "width"
+                    2 -> "brush"
+                    3 -> "shape"
+                    else -> "param$paramIndex"
+                }
+                "shadow" -> when (paramIndex) {
+                    1 -> "elevation"
+                    2 -> "shape"
+                    3 -> "clip"
+                    else -> "param$paramIndex"
+                }
+                "clip" -> "shape"
+                "offset" -> when (paramIndex) {
+                    1 -> "x"
+                    2 -> "y"
+                    else -> "param$paramIndex"
+                }
+                "rotate" -> "degrees"
+                "scale" -> "scale"
+                "alpha" -> "alpha"
+                "clickable" -> "onClick"
+                "pointerInput" -> "block"
+                else -> when (paramType) {
+                    "Dp" -> "dp"
+                    "Color" -> "color"
+                    "Float" -> "value"
+                    "Int" -> "value"
+                    "Boolean" -> "enabled"
+                    "String" -> "text"
+                    else -> "param$paramIndex"
+                }
             }
         }
     }
