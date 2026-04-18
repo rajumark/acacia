@@ -26,6 +26,8 @@ dependencies {
     implementation(libs.kotlin.gradle)
     implementation(libs.android.gradle)
     implementation("com.squareup:kotlinpoet:1.17.0")
+    implementation("org.ow2.asm:asm:9.6")
+    implementation("org.ow2.asm:asm-util:9.6")
 }
 
 kotlin {

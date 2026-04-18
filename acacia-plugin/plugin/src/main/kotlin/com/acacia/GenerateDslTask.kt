@@ -4,7 +4,7 @@ import com.acacia.generator.KotlinGenerator
 import com.acacia.model.ModifierFunction
 import com.acacia.resolver.DependencyResolver
 import com.acacia.resolver.AarExtractor
-import com.acacia.parser.ModifierParser
+import com.acacia.parser.AsmModifierParser
 import com.acacia.mapping.NamingEngine
 import com.acacia.cache.CacheManager
 import org.gradle.api.DefaultTask
@@ -95,13 +95,13 @@ open class GenerateDslTask : DefaultTask() {
             emptyList()
         }
         
-        // Stage 2: API Parsing
+        // Stage 2: API Parsing with ASM
         val parsedFunctions = try {
             if (jarFiles.isEmpty()) {
                 project.logger.warn("Shortify: No jar files to parse")
                 emptyList()
             } else {
-                val parser = ModifierParser(project)
+                val parser = AsmModifierParser(project)
                 val functions = parser.parseModifierFunctions(jarFiles)
                 
                 if (isDebug) {
@@ -110,11 +110,11 @@ open class GenerateDslTask : DefaultTask() {
                     }
                 }
                 
-                project.logger.lifecycle("Shortify: Parsed ${functions.size} Modifier functions")
+                project.logger.lifecycle("Shortify: Parsed ${functions.size} Modifier functions with ASM")
                 functions
             }
         } catch (e: Exception) {
-            project.logger.warn("Shortify: API parsing failed: ${e.message}")
+            project.logger.warn("Shortify: ASM parsing failed: ${e.message}")
             emptyList()
         }
         
