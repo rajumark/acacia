@@ -1,0 +1,2534 @@
+Here’s a **production-grade README** you can directly use for your project. It’s structured like a real open-source project—not just an idea dump, but something devs can understand, adopt, and contribute to.
+
+---
+
+# 🚀 AI-Native Compose DSL (Shortify)
+
+> A Gradle plugin that introduces an **AI-optimized DSL layer** over Jetpack Compose by compressing verbose APIs into a deterministic, token-efficient syntax.
+
+---
+
+## 📌 Vision
+
+Modern development is shifting from:
+
+```
+Human → writes code → IDE assists
+```
+
+to:
+
+```
+Human intent ↔ AI ↔ code ↔ compiler
+```
+
+This project builds the missing layer:
+
+> **A deterministic, AI-friendly abstraction over Compose UI**
+
+---
+
+## 🎯 Goals
+
+* Reduce verbosity of Compose APIs
+* Create **predictable patterns for AI generation**
+* Improve **token efficiency for LLMs**
+* Enable **bidirectional transformation**
+* Provide **zero runtime overhead (compile-time only)**
+
+---
+
+## 🧠 Core Concept
+
+We introduce a **short DSL layer** over Compose.
+
+### Example
+
+#### Input (DSL)
+
+```kotlin
+Modifier.p(16).bg(Red).fmw()
+```
+
+#### Output (Generated Compose)
+
+```kotlin
+Modifier
+    .padding(16.dp)
+    .background(Color.Red)
+    .fillMaxWidth()
+```
+
+---
+
+## 🧩 Architecture Overview
+
+```
+                ┌────────────────────┐
+                │  Developer / AI    │
+                │  Writes DSL        │
+                └────────┬───────────┘
+                         ↓
+                ┌────────────────────┐
+                │  DSL Layer         │
+                │  (Short Syntax)    │
+                └────────┬───────────┘
+                         ↓
+                ┌────────────────────┐
+                │ Mapping Engine     │
+                │ (p → padding)      │
+                └────────┬───────────┘
+                         ↓
+                ┌────────────────────┐
+                │ Code Generator     │
+                │ (KotlinPoet)       │
+                └────────┬───────────┘
+                         ↓
+                ┌────────────────────┐
+                │ Compose Code       │
+                └────────────────────┘
+```
+
+---
+
+## ⚙️ Features
+
+### ✅ 1. Modifier Compression
+
+```kotlin
+Modifier.p(16)
+Modifier.bg(Red)
+Modifier.ph(8)
+```
+
+---
+
+### ✅ 2. Deterministic Naming
+
+| Compose API       | DSL |
+| ----------------- | --- |
+| padding           | p   |
+| background        | bg  |
+| fillMaxWidth      | fmw |
+| paddingHorizontal | ph  |
+
+---
+
+### ✅ 3. Compile-Time Generation
+
+* No runtime cost
+* No reflection
+* Fully static
+
+---
+
+### ✅ 4. AI Optimization
+
+* Reduced tokens
+* Predictable patterns
+* Better generation consistency
+
+---
+
+## 🏗️ Project Structure
+
+```
+shortify/
+│
+├── gradle-plugin/
+│   ├── src/main/kotlin/
+│   │   ├── ShortifyPlugin.kt          # Entry point
+│   │   ├── GenerateModifiersTask.kt   # Core logic
+│   │   ├── MappingEngine.kt           # DSL mapping
+│   │   ├── JarScanner.kt              # Dependency scan
+│   │   └── CodeGenerator.kt           # KotlinPoet generator
+│   │
+│   └── resources/
+│       └── META-INF/gradle-plugins/
+│           └── com.shortify.properties
+│
+├── sample-app/
+│   └── app/
+│       └── build.gradle.kts
+│
+└── README.md
+```
+
+---
+
+## ⚙️ How It Works
+
+### Step 1: Plugin Applied
+
+```kotlin
+plugins {
+    id("com.shortify")
+}
+```
+
+---
+
+### Step 2: Gradle Task Runs
+
+```
+generateShortModifiers
+```
+
+---
+
+### Step 3: Dependency Scan
+
+* Reads `compileClasspath`
+* Extracts `.jar` and `.aar`
+* Filters Compose libraries
+
+---
+
+### Step 4: API Extraction
+
+* Parses Modifier extension functions
+* Builds internal model
+
+---
+
+### Step 5: Code Generation
+
+Creates:
+
+```
+build/generated/source/shortify/ShortModifiers.kt
+```
+
+---
+
+### Step 6: Compilation
+
+Generated code becomes available automatically.
+
+---
+
+## 🔄 Data Flow Example
+
+### DSL Input
+
+```kotlin
+Modifier.p(16).bg(Red)
+```
+
+### Internal Mapping
+
+```
+p  → padding
+bg → background
+16 → 16.dp
+Red → Color.Red
+```
+
+### Output
+
+```kotlin
+Modifier.padding(16.dp).background(Color.Red)
+```
+
+---
+
+## 🧪 Example Usage
+
+```kotlin
+import com.shortify.*
+
+Box(
+    modifier = Modifier
+        .p(16)
+        .bg(Color.Red)
+        .fmw()
+)
+```
+
+---
+
+## ⚡ Performance
+
+### First Build
+
+* Dependency scan: ~2s
+* JAR extraction: ~3–6s
+* Parsing: ~3–8s
+
+**Total: ~8–15 seconds**
+
+---
+
+### Subsequent Builds (with cache)
+
+* ~0.5–2 seconds
+
+---
+
+## 🧠 AI Design Principles
+
+### 1. Deterministic Vocabulary
+
+```
+padding → always p
+background → always bg
+```
+
+---
+
+### 2. Token Efficiency
+
+| Code Type | Tokens |
+| --------- | ------ |
+| Compose   | High   |
+| DSL       | Lower  |
+
+---
+
+### 3. Pattern Consistency
+
+```kotlin
+Modifier.p().bg().fmw()
+```
+
+---
+
+## 🛠️ Configuration
+
+```kotlin
+shortify {
+    enabled = true
+    debug = false
+}
+```
+
+---
+
+## 📦 Roadmap
+
+### Phase 1 (Current)
+
+* Modifier DSL
+* Basic mapping
+* Manual rules
+
+---
+
+### Phase 2
+
+* Auto-extract Compose APIs
+* Collision-safe naming
+* Caching layer
+
+---
+
+### Phase 3
+
+* Full Compose DSL
+
+```kotlin
+col {
+  txt("Hello")
+  btn("Click")
+}
+```
+
+---
+
+### Phase 4
+
+* Intermediate Representation (IR)
+* Multi-target generation
+
+---
+
+### Phase 5
+
+* Cross-platform support
+
+  * Compose
+  * Flutter
+  * SwiftUI
+
+---
+
+### Phase 6
+
+* AI integration layer
+* Prompt → DSL → Code pipeline
+
+---
+
+## ⚠️ Limitations
+
+* Not all Compose APIs mapped yet
+* Requires consistent naming rules
+* Learning curve for new DSL
+
+---
+
+## 🔥 Future Vision
+
+This is not just a plugin.
+
+This evolves into:
+
+> **An AI-native programming layer above UI frameworks**
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome:
+
+* New mappings
+* Naming algorithms
+* Performance optimizations
+* DSL design improvements
+
+---
+
+## 📄 License
+
+MIT License
+
+---
+
+## 💡 Final Thought
+
+This project is not about shorter code.
+
+It’s about:
+
+> **Designing a language that AI can generate better than humans**
+
+---
+
+If you want, next I can:
+
+* Generate **actual starter code for each file (plugin, task, generator)**
+* Or design **mapping engine with collision-safe algorithm**
+* Or help you turn this into **publishable Gradle plugin**
+-------------------------
+Good—now you’re asking the **right engineering question**.
+Let’s define a **clean, production-grade pseudo flow** of your entire system.
+
+This is not code — this is **architecture + responsibility + execution order**.
+
+---
+
+# 🧠 High-Level Flow
+
+```text id="k3c0ey"
+Gradle Build Starts
+        ↓
+Plugin Applied
+        ↓
+Task Registered
+        ↓
+Task Executes (before Kotlin compile)
+        ↓
+Resolve Dependencies (Compose jars)
+        ↓
+Extract APIs (Modifier extensions)
+        ↓
+Apply Mapping Rules (DSL naming)
+        ↓
+Generate Kotlin Source
+        ↓
+Attach Generated Source to Compilation
+        ↓
+Kotlin Compile
+```
+
+---
+
+# 📁 Project Structure (Clean Separation)
+
+```text id="lbf3gw"
+shortify-plugin/
+│
+├── plugin/
+│   └── ShortifyPlugin.kt          # Entry point
+│
+├── task/
+│   └── GenerateDslTask.kt         # Orchestrator
+│
+├── resolver/
+│   ├── DependencyResolver.kt      # Get jars
+│   └── AarExtractor.kt            # aar → jar
+│
+├── parser/
+│   └── ModifierParser.kt          # Extract APIs
+│
+├── model/
+│   └── ModifierFunction.kt        # Data model
+│
+├── mapping/
+│   └── NamingEngine.kt            # p, bg, fmw
+│
+├── generator/
+│   └── KotlinGenerator.kt         # KotlinPoet
+│
+├── cache/
+│   └── CacheManager.kt            # Version-based caching
+│
+└── config/
+    └── ShortifyExtension.kt       # DSL config
+```
+
+---
+
+# 🧩 1. Plugin Entry (ShortifyPlugin)
+
+### Responsibility:
+
+* Register extension (config)
+* Register task
+* Hook into build lifecycle
+* Attach generated sources
+
+### Flow:
+
+```text id="oj02ph"
+apply(project)
+    ↓
+create extension (shortify {})
+    ↓
+register GenerateDslTask
+    ↓
+configure sourceSets (add generated dir)
+    ↓
+hook task before compileKotlin
+```
+
+---
+
+# ⚙️ 2. Extension (ShortifyExtension)
+
+### Responsibility:
+
+* User configuration
+
+### Example:
+
+```text id="p9vxgq"
+enabled: Boolean
+debug: Boolean
+namingStrategy: enum
+```
+
+---
+
+# 🛠️ 3. Task (GenerateDslTask)
+
+### This is the **brain (orchestrator)**
+
+### Responsibility:
+
+* Control full pipeline
+* Call all modules in order
+
+---
+
+## Task Flow (VERY IMPORTANT)
+
+```text id="s7yqww"
+1. Check if plugin enabled
+2. Check cache (skip if valid)
+3. Resolve dependencies
+4. Extract jar files
+5. Parse Modifier APIs
+6. Apply naming engine
+7. Generate Kotlin file
+8. Save cache
+```
+
+---
+
+# 📦 4. DependencyResolver
+
+### Responsibility:
+
+* Get correct classpath
+
+---
+
+## Best Practice
+
+DO NOT hardcode:
+
+```text id="d57t9g"
+debugCompileClasspath ❌
+```
+
+USE:
+
+```text id="jnz8nd"
+compileClasspath (fallback)
+variant-aware configs (better)
+```
+
+---
+
+## Output:
+
+```text id="rtg2q1"
+List<Artifact>
+(group, name, version, file)
+```
+
+---
+
+# 📦 5. AarExtractor
+
+### Responsibility:
+
+* Convert `.aar` → `.jar`
+
+---
+
+## Flow:
+
+```text id="d4gtoc"
+if file == .aar
+    unzip
+    extract classes.jar
+    cache result
+else
+    use directly
+```
+
+---
+
+## Best Practice:
+
+* Store in:
+
+```text id="49u2nm"
+build/shortify/cache/jars/
+```
+
+---
+
+# 🔍 6. ModifierParser
+
+### Responsibility:
+
+* Extract ONLY:
+
+```text id="kh7tp1"
+Extension functions on Modifier
+```
+
+---
+
+## Input:
+
+```text id="ysqru1"
+List<File> (jar files)
+```
+
+---
+
+## Output:
+
+```kotlin id="f3rj4r"
+List<ModifierFunction>
+```
+
+---
+
+## Best Practice:
+
+* Use:
+
+  * Kotlin metadata (preferred)
+  * NOT reflection at runtime
+* Ignore:
+
+  * deprecated
+  * internal APIs
+
+---
+
+# 🧱 7. Model (ModifierFunction)
+
+### Example:
+
+```kotlin id="jo4r3x"
+data class ModifierFunction(
+    val name: String,
+    val parameters: List<Param>,
+    val returnType: String
+)
+```
+
+---
+
+# 🧠 8. NamingEngine
+
+### Responsibility:
+
+* Convert:
+
+```text id="z20u93"
+padding → p
+background → bg
+```
+
+---
+
+## Best Practice Rules:
+
+1. Deterministic (no randomness)
+2. Collision-safe
+3. AI-friendly patterns
+
+---
+
+## Flow:
+
+```text id="44rpp6"
+input: ModifierFunction
+↓
+apply rules
+↓
+check collision map
+↓
+assign short name
+```
+
+---
+
+## Output:
+
+```text id="t5vcub"
+Map<OriginalName, ShortName>
+```
+
+---
+
+# 🧾 9. KotlinGenerator
+
+### Responsibility:
+
+* Generate final Kotlin file
+
+---
+
+## Best Practice:
+
+* Use **KotlinPoet**
+
+---
+
+## Output Example:
+
+```kotlin id="t2d3fj"
+fun Modifier.p(all: Dp) = this.padding(all)
+
+fun Modifier.bg(color: Color) = this.background(color)
+```
+
+---
+
+## File Location:
+
+```text id="p1uw3d"
+build/generated/source/shortify/ShortModifiers.kt
+```
+
+---
+
+# 💾 10. CacheManager
+
+### Responsibility:
+
+* Avoid recomputation
+
+---
+
+## Cache Key:
+
+```text id="ssjyjz"
+compose-version + plugin-version + config-hash
+```
+
+---
+
+## Store:
+
+```text id="v0u8s2"
+build/shortify/cache/
+    ├── jars/
+    ├── parsed.json
+    └── mapping.json
+```
+
+---
+
+## Best Practice:
+
+```text id="5q9o6y"
+if cache valid → skip parser
+```
+
+---
+
+# 🔗 11. SourceSet Integration
+
+### Responsibility:
+
+* Make generated code visible
+
+---
+
+## Flow:
+
+```text id="nh8u2p"
+android.sourceSets.main.java.srcDir(
+    build/generated/source/shortify
+)
+```
+
+---
+
+# ⚡ Execution Timeline
+
+```text id="b10o8m"
+Gradle init
+    ↓
+Plugin apply
+    ↓
+Task registered
+    ↓
+Build starts
+    ↓
+GenerateDslTask runs
+    ↓
+Files generated
+    ↓
+Kotlin compile sees generated code
+```
+
+---
+
+# ⚠️ Critical Best Practices
+
+---
+
+## 1. DO NOT re-run heavy steps
+
+Bad:
+
+```text id="qxkw3l"
+parse jars every build ❌
+```
+
+Good:
+
+```text id="t5shqs"
+cache + reuse ✅
+```
+
+---
+
+## 2. DO NOT rely on string replace
+
+Bad:
+
+```text id="9hzpdt"
+"text".replace("padding", "p") ❌
+```
+
+Good:
+
+```text id="o52qzq"
+structured model → generator ✅
+```
+
+---
+
+## 3. DO NOT depend on IDE
+
+Everything must work via:
+
+```text id="b37w0h"
+./gradlew build
+```
+
+---
+
+## 4. Keep deterministic output
+
+Same input → same generated file
+
+---
+
+## 5. Fail safely
+
+If parsing fails:
+
+```text id="2nsyip"
+skip generation (don’t break build)
+```
+
+---
+
+# 🧠 Final Mental Model
+
+```text id="6h6h9r"
+Gradle Plugin = Orchestrator
+Task          = Pipeline runner
+Resolver      = Input provider
+Parser        = Understanding layer
+NamingEngine  = Intelligence layer
+Generator     = Output layer
+Cache         = Performance layer
+```
+
+---
+
+# 🚀 What You Should Do Next
+
+Implement in this order:
+
+### Step 1
+
+* Plugin + Task working
+
+### Step 2
+
+* Hardcoded generator (no parsing)
+
+### Step 3
+
+* Dependency resolver
+
+### Step 4
+
+* Basic parser
+
+### Step 5
+
+* Naming engine
+
+### Step 6
+
+* Cache layer
+
+---
+
+If you want next, I can:
+
+* Write **actual class skeletons (ready-to-copy Kotlin files)**
+* Or design **perfect naming algorithm (collision-free + scalable)**
+* Or show **how to parse Kotlin metadata from jar (hardest part)**
+----------------------------------
+Good—this is the part most people skip, and it’s exactly where plugins either become **solid tools** or **maintenance nightmares**.
+
+Below is a **production-grade checklist** of things you must take care of while building this.
+
+---
+
+# ⚠️ 1. Build Stability (Top Priority)
+
+### ❗ Never break user builds
+
+* Your plugin must **fail gracefully**
+* If anything goes wrong:
+
+  ```text
+  skip generation → log warning → continue build
+  ```
+
+### Avoid:
+
+```text
+throw Exception ❌
+```
+
+### Prefer:
+
+```text
+logger.warn("Shortify skipped due to error")
+```
+
+---
+
+# ⚙️ 2. Gradle Best Practices
+
+### ✅ Use lazy configuration
+
+Avoid:
+
+```kotlin
+tasks.create("taskName")
+```
+
+Use:
+
+```kotlin
+tasks.register("taskName")
+```
+
+---
+
+### ✅ Don’t execute logic in `apply()`
+
+Bad:
+
+```text
+heavy logic inside plugin apply ❌
+```
+
+Good:
+
+```text
+register task → run logic inside task ✅
+```
+
+---
+
+### ✅ Respect configuration vs execution phase
+
+* `apply()` → setup only
+* `@TaskAction` → heavy work
+
+---
+
+# 📦 3. Dependency Resolution Safety
+
+### ❗ Don’t assume configuration names
+
+Avoid:
+
+```text
+debugCompileClasspath ❌
+```
+
+Use fallback:
+
+```text
+compileClasspath
+releaseCompileClasspath
+```
+
+---
+
+### ✅ Filter using metadata (NOT file name)
+
+Bad:
+
+```text
+file.name.contains("compose") ❌
+```
+
+Good:
+
+```text
+artifact.group == "androidx.compose"
+```
+
+---
+
+# 🧩 4. `.aar` Handling
+
+### ❗ Always expect `.aar`, not just `.jar`
+
+* Compose mostly ships as `.aar`
+
+---
+
+### ✅ Extract safely
+
+* Check:
+
+  * file exists
+  * `classes.jar` present
+
+---
+
+### ❗ Cache extracted jars
+
+Avoid:
+
+```text
+extract every build ❌
+```
+
+---
+
+# 🔍 5. Parsing Layer Risks
+
+### ❗ Kotlin metadata is tricky
+
+Be careful:
+
+* Extension functions are static methods
+* Receiver is first parameter
+
+---
+
+### ❗ Avoid reflection
+
+Bad:
+
+```text
+Class.forName() ❌
+```
+
+Why:
+
+* Slow
+* Not reliable at build time
+
+---
+
+### ✅ Use:
+
+* Kotlin metadata
+* Bytecode parsing (ASM if needed)
+
+---
+
+# 🧠 6. Naming Engine Risks
+
+### ❗ Collisions
+
+Example:
+
+```text
+padding → p
+pointerInput → p ❌
+```
+
+---
+
+### ✅ Must handle:
+
+* collision resolution
+* deterministic naming
+
+---
+
+### ❗ Never randomize names
+
+Bad:
+
+```text
+p1, p2 randomly ❌
+```
+
+Good:
+
+```text
+stable + predictable naming ✅
+```
+
+---
+
+# 🧾 7. Code Generation Safety
+
+### ❗ Always generate valid Kotlin
+
+* Import correct packages
+* Handle overloads
+
+---
+
+### ❗ Preserve:
+
+* default parameters
+* parameter order
+* nullable types
+
+---
+
+### ✅ Use **KotlinPoet**
+
+Avoid string-based generation.
+
+---
+
+# 🔗 8. SourceSet Integration
+
+### ❗ Ensure generated code is visible
+
+If not:
+
+```text
+code compiles but not accessible ❌
+```
+
+---
+
+### ✅ Always add:
+
+```text
+build/generated/source/shortify
+```
+
+to sourceSets
+
+---
+
+# ⚡ 9. Performance & Build Time
+
+### ❗ Biggest risks:
+
+* jar extraction
+* parsing
+
+---
+
+### ✅ Must implement:
+
+#### 1. Caching
+
+```text
+compose-version based cache
+```
+
+#### 2. Incremental behavior
+
+```text
+skip if unchanged
+```
+
+---
+
+### ❗ Don’t regenerate always
+
+---
+
+# 💾 10. Cache Management
+
+### ❗ Cache invalidation
+
+Must reset when:
+
+* Compose version changes
+* Plugin version changes
+* Config changes
+
+---
+
+### ✅ Use hash:
+
+```text
+version + config → hash key
+```
+
+---
+
+# 🧪 11. Testing
+
+### Must cover:
+
+#### ✅ Unit tests
+
+* naming engine
+* mapping rules
+
+---
+
+#### ✅ Snapshot tests
+
+* generated files
+
+---
+
+#### ✅ Integration test
+
+* sample project builds successfully
+
+---
+
+# ⚠️ 12. Compatibility
+
+### ❗ Different Compose versions
+
+APIs may:
+
+* change
+* deprecate
+* overload differently
+
+---
+
+### ✅ Handle:
+
+* version detection
+* conditional parsing
+
+---
+
+# 🔄 13. Determinism (VERY IMPORTANT)
+
+### ❗ Output must be stable
+
+Same input → same file
+
+---
+
+Avoid:
+
+```text
+unordered iteration ❌
+```
+
+Use:
+
+```text
+sorted lists ✅
+```
+
+---
+
+# 🧵 14. Thread Safety
+
+Gradle may run tasks in parallel.
+
+### ❗ Avoid:
+
+* shared mutable state
+* static variables
+
+---
+
+# 📁 15. File System Safety
+
+### ❗ Always:
+
+* create directories before writing
+* handle file overwrite
+
+---
+
+### ❗ Never:
+
+* write outside `build/`
+
+---
+
+# 🪵 16. Logging
+
+### ✅ Provide debug mode
+
+```kotlin
+shortify {
+    debug = true
+}
+```
+
+---
+
+### ❗ Don’t spam logs
+
+---
+
+# 🔒 17. API Scope Control
+
+### ❗ Only process what you need
+
+Don’t parse:
+
+```text
+entire jar ❌
+```
+
+Only:
+
+```text
+Modifier extensions ✅
+```
+
+---
+
+# 🚫 18. Avoid Overengineering Early
+
+### ❗ Don’t build:
+
+* full compiler
+* IR system
+* cross-platform engine
+
+Start simple:
+
+```text
+Modifier → short functions
+```
+
+---
+
+# 🧠 19. AI-Specific Considerations
+
+### ❗ Consistency > Shortness
+
+Bad:
+
+```text
+padding → p
+paddingHorizontal → h ❌
+```
+
+Good:
+
+```text
+padding → p
+paddingHorizontal → ph
+```
+
+---
+
+# ⚖️ 20. Developer Experience
+
+### ❗ Keep it simple:
+
+* easy import
+* no weird setup
+* predictable behavior
+
+---
+
+# 🚨 Final Reality Check
+
+If you ignore these:
+
+| Area        | Result       |
+| ----------- | ------------ |
+| caching     | slow builds  |
+| naming      | confusion    |
+| parsing     | broken code  |
+| sourceSet   | unusable API |
+| determinism | flaky builds |
+
+---
+
+# 🧭 Golden Rules
+
+```text
+1. Never break build
+2. Be deterministic
+3. Cache aggressively
+4. Keep mapping predictable
+5. Generate clean code
+```
+
+---
+
+If you want next, I can:
+
+* Review your GitHub repo and point **exact issues**
+* Or write **real Kotlin implementation skeleton (copy-paste ready)**
+* Or design **collision-proof naming system (this is your core IP)**
+----------------------------------
+Alright—this is where you shift from “developer building a plugin” to **designing instructions for an AI agent that will build it correctly without supervision**.
+
+Below is a **clear, structured execution plan written as instructions to an AI coding agent**.
+It defines *what to build, in what order, with constraints and expected outputs*.
+
+---
+
+# 🤖 AI AGENT IMPLEMENTATION PLAN
+
+### Project: Shortify (AI-Native Compose Modifier DSL)
+
+---
+
+## 🎯 Objective
+
+Build a **Gradle plugin** that:
+
+1. Scans project dependencies
+2. Extracts **Jetpack Compose Modifier extension functions**
+3. Generates **short DSL wrapper functions**
+4. Adds generated code to compilation
+5. Ensures **zero runtime overhead**
+
+---
+
+## 📌 Constraints (Must Follow)
+
+```text
+- Do NOT break Gradle builds
+- Do NOT use runtime reflection
+- Do NOT generate invalid Kotlin
+- Must be deterministic
+- Must support caching
+- Must run before Kotlin compilation
+```
+
+---
+
+## 🧱 Phase 1 — Plugin Foundation
+
+### Task 1.1: Create Gradle Plugin
+
+Create class:
+
+```text
+ShortifyPlugin : Plugin<Project>
+```
+
+---
+
+### Responsibilities:
+
+* Register extension:
+
+  ```text
+  shortify {}
+  ```
+
+* Register task:
+
+  ```text
+  generateShortModifiers
+  ```
+
+* Attach generated source directory:
+
+  ```text
+  build/generated/source/shortify
+  ```
+
+* Hook task before:
+
+  ```text
+  compileKotlin
+  ```
+
+---
+
+## 🧩 Phase 2 — Extension (Configuration)
+
+Create:
+
+```text
+ShortifyExtension
+```
+
+---
+
+### Fields:
+
+```text
+enabled: Boolean = true
+debug: Boolean = false
+```
+
+---
+
+### Behavior:
+
+* If `enabled == false` → skip entire pipeline
+
+---
+
+## ⚙️ Phase 3 — Task Orchestrator
+
+Create:
+
+```text
+GenerateDslTask : DefaultTask
+```
+
+---
+
+### Entry Method:
+
+```text
+@TaskAction execute()
+```
+
+---
+
+### Execution Flow:
+
+```text
+1. Validate extension (enabled)
+2. Check cache
+3. Resolve dependencies
+4. Extract jars
+5. Parse Modifier functions
+6. Apply naming rules
+7. Generate Kotlin file
+8. Save cache
+```
+
+---
+
+## 📦 Phase 4 — Dependency Resolution
+
+Create:
+
+```text
+DependencyResolver
+```
+
+---
+
+### Input:
+
+```text
+Project
+```
+
+---
+
+### Logic:
+
+1. Access:
+
+   ```text
+   compileClasspath configuration
+   ```
+
+2. Extract artifacts:
+
+   ```text
+   group, name, version, file
+   ```
+
+3. Filter:
+
+   ```text
+   group starts with "androidx.compose"
+   ```
+
+---
+
+### Output:
+
+```text
+List<Artifact>
+```
+
+---
+
+## 📦 Phase 5 — AAR Extraction
+
+Create:
+
+```text
+AarExtractor
+```
+
+---
+
+### Logic:
+
+```text
+if file.extension == "aar":
+    unzip
+    extract classes.jar
+    store in cache
+else:
+    return file
+```
+
+---
+
+### Output:
+
+```text
+List<File> (JAR files only)
+```
+
+---
+
+## 🔍 Phase 6 — Modifier Parser
+
+Create:
+
+```text
+ModifierParser
+```
+
+---
+
+### Goal:
+
+Extract only:
+
+```text
+Extension functions on Modifier
+```
+
+---
+
+### Input:
+
+```text
+List<File> (jar files)
+```
+
+---
+
+### Output:
+
+```text
+List<ModifierFunction>
+```
+
+---
+
+### Model:
+
+```text
+ModifierFunction:
+    name: String
+    parameters: List<Param>
+    returnType: String
+```
+
+---
+
+### Rules:
+
+* Include only public APIs
+* Ignore deprecated
+* Detect extension receiver = Modifier
+
+---
+
+## 🧠 Phase 7 — Naming Engine
+
+Create:
+
+```text
+NamingEngine
+```
+
+---
+
+### Input:
+
+```text
+List<ModifierFunction>
+```
+
+---
+
+### Output:
+
+```text
+Map<ModifierFunction, ShortName>
+```
+
+---
+
+### Rules:
+
+1. Deterministic mapping
+2. No randomness
+3. Collision handling required
+
+---
+
+### Example:
+
+```text
+padding → p
+background → bg
+fillMaxWidth → fmw
+```
+
+---
+
+### Collision Strategy:
+
+```text
+If duplicate:
+    use suffix or extended abbreviation
+```
+
+---
+
+## 🧾 Phase 8 — Kotlin Code Generator
+
+Create:
+
+```text
+KotlinGenerator
+```
+
+---
+
+### Use:
+
+* KotlinPoet
+
+---
+
+### Input:
+
+```text
+Mapping + ModifierFunction list
+```
+
+---
+
+### Output File:
+
+```text
+ShortModifiers.kt
+```
+
+---
+
+### Output Example:
+
+```kotlin
+fun Modifier.p(all: Dp) = this.padding(all)
+
+fun Modifier.bg(color: Color) = this.background(color)
+```
+
+---
+
+### Requirements:
+
+* Preserve parameters
+* Preserve defaults
+* Add imports
+* Generate valid Kotlin
+
+---
+
+## 💾 Phase 9 — Cache Manager
+
+Create:
+
+```text
+CacheManager
+```
+
+---
+
+### Purpose:
+
+Avoid recomputation
+
+---
+
+### Cache Key:
+
+```text
+composeVersion + pluginVersion + configHash
+```
+
+---
+
+### Behavior:
+
+```text
+if cache valid:
+    skip parsing + extraction
+```
+
+---
+
+### Storage:
+
+```text
+build/shortify/cache/
+```
+
+---
+
+## 🔗 Phase 10 — Source Integration
+
+Ensure generated file is added to:
+
+```text
+main sourceSet
+```
+
+---
+
+### Required:
+
+```text
+Generated code must be visible to compiler automatically
+```
+
+---
+
+## ⚡ Execution Order (Strict)
+
+```text
+Plugin apply
+    ↓
+Task registered
+    ↓
+Build triggered
+    ↓
+GenerateDslTask runs
+    ↓
+Generated file created
+    ↓
+Kotlin compilation starts
+```
+
+---
+
+## 🧪 Phase 11 — Testing
+
+AI must implement:
+
+---
+
+### Unit Tests
+
+* Naming engine
+* Mapping logic
+
+---
+
+### Snapshot Tests
+
+* Generated Kotlin file
+
+---
+
+### Integration Test
+
+* Sample project builds successfully
+
+---
+
+## ⚠️ Failure Handling Rules
+
+If any step fails:
+
+```text
+- Log warning
+- Skip generation
+- DO NOT fail build
+```
+
+---
+
+## 🚫 Strict Anti-Patterns
+
+AI must NOT:
+
+```text
+- Use reflection (Class.forName)
+- Parse entire jar blindly
+- Regenerate every build
+- Use random naming
+- Write outside build directory
+```
+
+---
+
+## 🧠 Determinism Requirement
+
+Same input must always produce:
+
+```text
+Same output file (byte-to-byte)
+```
+
+---
+
+## 🧭 Completion Criteria
+
+Project is complete when:
+
+```text
+- Plugin applies successfully
+- Task runs automatically
+- Kotlin file is generated
+- Modifier short functions compile
+- Build time impact < 10s first run
+- Subsequent runs < 2s (with cache)
+```
+
+---
+
+## 🚀 Optional Enhancements (After Core)
+
+```text
+- Configurable naming rules
+- Debug mapping output
+- Compose version detection
+- Incremental builds
+```
+
+---
+
+## 🧠 Final Instruction to AI Agent
+
+```text
+Focus on correctness first, then performance.
+
+Do not optimize prematurely.
+
+Build in phases and verify each layer before moving forward.
+
+Ensure the system is modular, testable, and deterministic.
+```
+
+---
+
+If you want next, I can:
+
+* Convert this into **actual file-by-file code generation prompts for AI**
+* Or create **task breakdown for parallel AI agents (multi-agent system)**
+* Or give you **first working minimal implementation (copy-paste runnable)**
+---------------------------
+Perfect—this is exactly the layer that turns a “working plugin” into a **production-grade, trusted Gradle tool**.
+
+Below is a **curated list of critical best practices**, each with:
+
+* ✅ What to do
+* ❌ What to avoid
+* 💡 Why it matters
+* 🔧 Small code snippet
+
+No fluff—only things that actually matter in real builds.
+
+---
+
+# 🧱 1. NEVER Hardcode Paths
+
+### ❌ Bad
+
+```kotlin
+val file = File("/Users/dev/project/libs/compose.jar")
+```
+
+### ✅ Good
+
+```kotlin
+val files = project.configurations
+    .getByName("compileClasspath")
+    .resolve()
+```
+
+### 💡 Why
+
+* Works across machines, CI, OS
+* Gradle manages dependency resolution
+
+---
+
+# ⚙️ 2. Always Use Gradle APIs (Not DIY)
+
+### ❌ Bad
+
+```kotlin
+File("build/generated/source")
+```
+
+### ✅ Good
+
+```kotlin
+val outputDir = project.layout.buildDirectory
+    .dir("generated/source/shortify")
+    .get()
+    .asFile
+```
+
+### 💡 Why
+
+* Supports configuration cache
+* Works with Gradle internals safely
+
+---
+
+# 🧩 3. Use `tasks.register`, NOT `tasks.create`
+
+### ❌ Bad
+
+```kotlin
+project.tasks.create("generateDsl")
+```
+
+### ✅ Good
+
+```kotlin
+val task = project.tasks.register("generateDsl", GenerateDslTask::class.java)
+```
+
+### 💡 Why
+
+* Lazy configuration
+* Faster builds
+
+---
+
+# 🔁 4. Avoid `afterEvaluate` When Possible
+
+### ❌ Bad
+
+```kotlin
+project.afterEvaluate {
+    // logic
+}
+```
+
+### ✅ Good
+
+```kotlin
+project.tasks.named("preBuild") {
+    dependsOn(task)
+}
+```
+
+### 💡 Why
+
+* `afterEvaluate` breaks configuration cache
+* Hard to debug lifecycle issues
+
+---
+
+# 📦 5. Use Artifact Metadata (NOT filename)
+
+### ❌ Bad
+
+```kotlin
+if (file.name.contains("compose"))
+```
+
+### ✅ Good
+
+```kotlin
+val artifacts = configuration
+    .resolvedConfiguration
+    .resolvedArtifacts
+
+val compose = artifacts.filter {
+    it.moduleVersion.id.group.startsWith("androidx.compose")
+}
+```
+
+### 💡 Why
+
+* Filenames can change
+* Metadata is reliable
+
+---
+
+# 📁 6. Use `Provider` API (Lazy Values)
+
+### ❌ Bad
+
+```kotlin
+val dir = project.buildDir
+```
+
+### ✅ Good
+
+```kotlin
+val dir = project.layout.buildDirectory.dir("shortify")
+```
+
+### 💡 Why
+
+* Enables lazy evaluation
+* Required for modern Gradle
+
+---
+
+# ⚡ 7. Declare Inputs & Outputs (CRITICAL)
+
+### ❌ Bad
+
+```kotlin
+@TaskAction
+fun run() { ... }
+```
+
+### ✅ Good
+
+```kotlin
+@InputFiles
+val classpath = project.files()
+
+@OutputDirectory
+val outputDir = project.layout.buildDirectory.dir("generated/shortify")
+```
+
+### 💡 Why
+
+* Enables incremental builds
+* Enables caching
+* Huge performance gain
+
+---
+
+# 🧠 8. Make Task Incremental-Friendly
+
+### ✅ Good
+
+```kotlin
+@Input
+var composeVersion: String = ""
+```
+
+### 💡 Why
+
+Gradle can skip task if inputs unchanged.
+
+---
+
+# 🧾 9. Use KotlinPoet (Never String Concatenation)
+
+### ❌ Bad
+
+```kotlin
+val code = "fun Modifier.p() = this.padding()"
+```
+
+### ✅ Good
+
+```kotlin
+FunSpec.builder("p")
+    .receiver(Modifier::class)
+    .addStatement("return this.padding()")
+```
+
+### 💡 Why
+
+* Guarantees valid Kotlin
+* Handles imports automatically
+
+---
+
+# 🔄 10. Sort Everything (Determinism)
+
+### ❌ Bad
+
+```kotlin
+functions.forEach { ... }
+```
+
+### ✅ Good
+
+```kotlin
+functions.sortedBy { it.name }.forEach { ... }
+```
+
+### 💡 Why
+
+* Same input → same output
+* Prevents flaky builds
+
+---
+
+# 💾 11. Cache Heavy Work
+
+### ❌ Bad
+
+```kotlin
+extractJar() // every build
+```
+
+### ✅ Good
+
+```kotlin
+val cacheDir = File(project.buildDir, "shortify/cache")
+
+if (cacheExists) return cachedResult
+```
+
+### 💡 Why
+
+* Saves seconds per build
+* Essential for usability
+
+---
+
+# 📦 12. Handle `.aar` Properly
+
+### ✅ Good
+
+```kotlin
+ZipFile(aar).use { zip ->
+    val entry = zip.getEntry("classes.jar")
+}
+```
+
+### 💡 Why
+
+* Compose uses `.aar`
+* Ignoring this = broken plugin
+
+---
+
+# 🔐 13. Never Use Reflection
+
+### ❌ Bad
+
+```kotlin
+Class.forName("androidx.compose.ui.Modifier")
+```
+
+### ✅ Good
+
+```text
+Parse bytecode / metadata
+```
+
+### 💡 Why
+
+* Not safe at build time
+* Slower + unreliable
+
+---
+
+# 🧵 14. Avoid Global State
+
+### ❌ Bad
+
+```kotlin
+object Cache {
+    val map = mutableMapOf<...>()
+}
+```
+
+### ✅ Good
+
+```kotlin
+class CacheManager(private val project: Project)
+```
+
+### 💡 Why
+
+* Gradle runs tasks in parallel
+* Global state = race conditions
+
+---
+
+# 📣 15. Use Gradle Logger (NOT println)
+
+### ❌ Bad
+
+```kotlin
+println("Generating...")
+```
+
+### ✅ Good
+
+```kotlin
+project.logger.lifecycle("Generating DSL...")
+```
+
+### 💡 Why
+
+* Integrated with Gradle output
+* Supports debug levels
+
+---
+
+# 🧪 16. Fail Softly
+
+### ❌ Bad
+
+```kotlin
+throw RuntimeException()
+```
+
+### ✅ Good
+
+```kotlin
+project.logger.warn("Shortify failed, skipping")
+return
+```
+
+### 💡 Why
+
+* Never break user builds
+
+---
+
+# 🔗 17. Add Generated Source Correctly
+
+### ✅ Good
+
+```kotlin
+android.sourceSets
+    .getByName("main")
+    .java.srcDir(outputDir)
+```
+
+### 💡 Why
+
+Without this → generated code is invisible
+
+---
+
+# ⚖️ 18. Keep Task Pure
+
+### ❌ Bad
+
+```kotlin
+task reads random files
+```
+
+### ✅ Good
+
+```kotlin
+task depends only on declared inputs
+```
+
+### 💡 Why
+
+* Required for caching
+* Predictable builds
+
+---
+
+# 🧠 19. Version-Aware Behavior
+
+### ✅ Good
+
+```kotlin
+val version = artifact.moduleVersion.id.version
+```
+
+### 💡 Why
+
+Compose APIs change → your plugin must adapt
+
+---
+
+# 📂 20. Never Write Outside `build/`
+
+### ❌ Bad
+
+```kotlin
+File("src/main/kotlin/Generated.kt")
+```
+
+### ✅ Good
+
+```kotlin
+build/generated/source/shortify
+```
+
+### 💡 Why
+
+* Keeps repo clean
+* Avoids git conflicts
+
+---
+
+# 🧪 21. Test Generated Code
+
+### ✅ Good
+
+```text
+compare generated file with snapshot
+```
+
+### 💡 Why
+
+Prevents silent breakage
+
+---
+
+# ⚡ 22. Use Minimal Scope Parsing
+
+### ❌ Bad
+
+```text
+parse all classes in jar
+```
+
+### ✅ Good
+
+```text
+only Modifier-related classes
+```
+
+### 💡 Why
+
+Huge performance difference
+
+---
+
+# 🔄 23. Stable Naming Strategy
+
+### ❌ Bad
+
+```text
+random abbreviation
+```
+
+### ✅ Good
+
+```text
+rule-based deterministic mapping
+```
+
+### 💡 Why
+
+AI + dev both rely on predictability
+
+---
+
+# 🧠 24. Prefer Composition Over Big Classes
+
+### ❌ Bad
+
+```text
+One giant class doing everything
+```
+
+### ✅ Good
+
+```text
+Resolver → Parser → Mapper → Generator
+```
+
+### 💡 Why
+
+Maintainable + testable
+
+---
+
+# 🧭 25. Keep MVP Small
+
+### ❌ Bad
+
+```text
+support full Compose API immediately
+```
+
+### ✅ Good
+
+```text
+start with 5–10 Modifier functions
+```
+
+### 💡 Why
+
+Faster iteration, less bugs
+
+---
+
+# 🚨 Final Golden Rules
+
+```text
+1. Never break build
+2. Use Gradle APIs only
+3. Be deterministic
+4. Cache aggressively
+5. Keep everything incremental-friendly
+```
+
+---
+
+If you want next, I can:
+
+* Audit your actual plugin code and point **exact violations**
+* Or give you **copy-paste production-ready base plugin**
+* Or design **naming engine (hardest & most valuable part)**
