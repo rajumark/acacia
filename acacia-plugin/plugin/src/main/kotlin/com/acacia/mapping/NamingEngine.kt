@@ -59,21 +59,12 @@ class NamingEngine(private val project: Project) {
     }
     
     /**
-     * Primary deterministic mappings for common Modifier functions.
+     * Enhanced primary deterministic mappings with AI-friendly patterns.
      */
     private fun getPrimaryMapping(originalName: String): String {
         return when (originalName) {
-            // Layout Modifiers
+            // Core Layout Modifiers (highest priority)
             "padding" -> "p"
-            "paddingHorizontal" -> "ph"
-            "paddingVertical" -> "pv"
-            "paddingStart" -> "ps"
-            "paddingTop" -> "pt"
-            "paddingEnd" -> "pe"
-            "paddingBottom" -> "pb"
-            "margin" -> "m"
-            "marginHorizontal" -> "mh"
-            "marginVertical" -> "mv"
             "size" -> "sz"
             "width" -> "w"
             "height" -> "h"
@@ -81,49 +72,78 @@ class NamingEngine(private val project: Project) {
             "fillMaxHeight" -> "fmh"
             "fillMaxSize" -> "fms"
             
-            // Visual Modifiers
+            // Padding Variants (semantic naming)
+            "paddingHorizontal" -> "ph"
+            "paddingVertical" -> "pv"
+            "paddingStart" -> "ps"
+            "paddingTop" -> "pt"
+            "paddingEnd" -> "pe"
+            "paddingBottom" -> "pb"
+            
+            // Visual Modifiers (intuitive names)
             "background" -> "bg"
             "border" -> "br"
             "shadow" -> "sh"
             "clip" -> "cp"
             "alpha" -> "al"
             
-            // Interaction Modifiers
+            // Interaction Modifiers (action-oriented)
             "clickable" -> "clk"
             "pointerInput" -> "pi"
             "draggable" -> "dg"
             "scrollable" -> "sc"
             "swipeable" -> "sw"
+            "toggleable" -> "tg"
+            "selectable" -> "sl"
             
-            // Other common modifiers
+            // Transform Modifiers (descriptive)
             "offset" -> "of"
             "rotate" -> "rt"
             "scale" -> "sl"
-            "translate" -> "tl"
+            
+            // System & Layout Modifiers (system-oriented)
+            "wrapContentWidth" -> "wcw"
+            "wrapContentHeight" -> "wch"
+            "wrapContentSize" -> "wcs"
+            "requiredWidth" -> "rw"
+            "requiredHeight" -> "rh"
+            "requiredSize" -> "rs"
+            
+            // Window Insets (semantic grouping)
+            "windowInsetsPadding" -> "wip"
+            "systemBarsPadding" -> "sbp"
+            "statusBarsPadding" -> "stp"
+            "navigationBarsPadding" -> "nbp"
+            "safeDrawingPadding" -> "sdp"
+            
+            // Advanced Modifiers (categorical)
+            "semantics" -> "sem"
+            "testTag" -> "tt"
+            "zIndex" -> "zi"
             
             // Fallback for unknown functions
-            else -> generateFallbackName(originalName)
+            else -> generateSmartFallbackName(originalName)
         }
     }
     
     /**
-     * Generates alternative names for collisions.
+     * Generates alternative names for collisions with semantic approach.
      */
     private fun generateAlternativeName(originalName: String): String {
         val primaryName = getPrimaryMapping(originalName)
         
-        // Try adding numbers first
-        for (i in 2..9) {
-            val numberedName = "${primaryName}$i"
-            if (!usedNames.contains(numberedName)) {
-                return numberedName
+        // Try semantic variations first
+        val semanticVariations = generateSemanticVariations(originalName, primaryName)
+        for (variation in semanticVariations) {
+            if (!usedNames.contains(variation)) {
+                return variation
             }
         }
         
-        // Try adding suffixes
-        val suffixes = listOf("x", "y", "z", "a", "b", "c")
-        for (suffix in suffixes) {
-            val suffixedName = "${primaryName}_$suffix"
+        // Try adding descriptive suffixes
+        val descriptiveSuffixes = listOf("2", "x", "v2", "alt", "b")
+        for (suffix in descriptiveSuffixes) {
+            val suffixedName = "${primaryName}$suffix"
             if (!usedNames.contains(suffixedName)) {
                 return suffixedName
             }
@@ -134,23 +154,98 @@ class NamingEngine(private val project: Project) {
     }
     
     /**
-     * Generates fallback names for unknown functions.
+     * Generates semantic variations for collision resolution.
      */
-    private fun generateFallbackName(originalName: String): String {
+    private fun generateSemanticVariations(originalName: String, primaryName: String): List<String> {
+        val variations = mutableListOf<String>()
+        
+        // Add context-based variations
+        when {
+            originalName.contains("padding") -> {
+                variations.addAll(listOf("${primaryName}2", "${primaryName}v", "${primaryName}alt"))
+            }
+            originalName.contains("background") -> {
+                variations.addAll(listOf("${primaryName}2", "${primaryName}v", "${primaryName}alt"))
+            }
+            originalName.contains("clickable") -> {
+                variations.addAll(listOf("${primaryName}2", "${primaryName}v", "${primaryName}alt"))
+            }
+            originalName.contains("scrollable") -> {
+                variations.addAll(listOf("${primaryName}2", "${primaryName}v", "${primaryName}alt"))
+            }
+            originalName.contains("fillMax") -> {
+                variations.addAll(listOf("${primaryName}2", "${primaryName}v", "${primaryName}alt"))
+            }
+            originalName.contains("wrapContent") -> {
+                variations.addAll(listOf("${primaryName}2", "${primaryName}v", "${primaryName}alt"))
+            }
+            else -> {
+                variations.addAll(listOf("${primaryName}2", "${primaryName}v"))
+            }
+        }
+        
+        return variations
+    }
+    
+    /**
+     * Generates smart fallback names for unknown functions with AI-friendly patterns.
+     */
+    private fun generateSmartFallbackName(originalName: String): String {
+        // Handle special cases with hash suffixes (generated functions)
+        if (originalName.contains("-")) {
+            val baseName = originalName.split("-").first()
+            val baseMapping = getPrimaryMapping(baseName)
+            if (baseMapping != generateSmartFallbackName(baseName)) {
+                return "${baseMapping}_alt"
+            }
+        }
+        
         return when {
             originalName.length <= 3 -> originalName.lowercase()
             originalName.length <= 6 -> {
-                // First 2 letters + last 2 letters
+                // First 2 letters + last 2 letters for better memorability
                 val firstTwo = originalName.take(2).lowercase()
                 val lastTwo = originalName.takeLast(2).lowercase()
                 "$firstTwo$lastTwo"
             }
-            else -> {
-                // First letter + last letter + middle letter count
+            originalName.length <= 10 -> {
+                // First letter + middle pattern + last letter
                 val first = originalName.first().lowercase()
+                val middle = originalName.drop(1).dropLast(1).take(3).lowercase()
                 val last = originalName.last().lowercase()
-                val middle = originalName.length - 2
                 "$first$middle$last"
+            }
+            else -> {
+                // Smart abbreviation for long names
+                val words = originalName.split("(?=[A-Z])".toRegex())
+                when (words.size) {
+                    1 -> {
+                        // Single word: take first, middle, last letters
+                        val name = words[0]
+                        if (name.length <= 8) {
+                            return name.lowercase()
+                        }
+                        val first = name.first().lowercase()
+                        val middle = name.drop(1).dropLast(1).take(2).lowercase()
+                        val last = name.last().lowercase()
+                        "$first$middle$last"
+                    }
+                    2 -> {
+                        // Two words: first letter of each + middle of second
+                        val first = words[0].first().lowercase()
+                        val second = words[1]
+                        val secondMiddle = if (second.length > 3) {
+                            second.take(2).lowercase()
+                        } else {
+                            second.lowercase()
+                        }
+                        "$first$secondMiddle"
+                    }
+                    else -> {
+                        // Multiple words: take first letter of first 2-3 words
+                        words.take(3).joinToString("") { it.first().lowercase() }
+                    }
+                }
             }
         }
     }

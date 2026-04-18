@@ -7,6 +7,8 @@ import com.acacia.resolver.AarExtractor
 import com.acacia.parser.AsmModifierParser
 import com.acacia.mapping.NamingEngine
 import com.acacia.cache.CacheManager
+import com.acacia.platform.PlatformModifierDiscovery
+import com.acacia.platform.PlatformCodeGenerator
 import org.gradle.api.DefaultTask
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
@@ -95,7 +97,7 @@ open class GenerateDslTask : DefaultTask() {
             emptyList()
         }
         
-        // Stage 2: API Parsing with ASM
+        // Stage 2: Cross-platform API Parsing with ASM
         val parsedFunctions = try {
             if (jarFiles.isEmpty()) {
                 project.logger.warn("Shortify: No jar files to parse")
@@ -110,26 +112,26 @@ open class GenerateDslTask : DefaultTask() {
                     }
                 }
                 
-                project.logger.lifecycle("Shortify: Parsed ${functions.size} Modifier functions with ASM")
+                project.logger.lifecycle("Shortify: Discovered ${functions.size} Modifier functions for cross-platform")
                 functions
             }
         } catch (e: Exception) {
-            project.logger.warn("Shortify: ASM parsing failed: ${e.message}")
+            project.logger.warn("Shortify: Cross-platform discovery failed: ${e.message}")
             emptyList()
         }
         
-        // Stage 3: Naming (only if we have parsed functions)
+        // Stage 3: Platform-aware Naming (only if we have parsed functions)
         val finalFunctions = if (parsedFunctions.isNotEmpty()) {
             try {
-                val namingEngine = NamingEngine(project)
-                val nameMappings = namingEngine.generateShortNames(parsedFunctions)
+                val platformDiscovery = PlatformModifierDiscovery(project)
+                val platformMappings = platformDiscovery.getPlatformSpecificMappings()
                 
-                // Apply name mappings to functions
+                // Apply platform-specific mappings
                 parsedFunctions.map { function ->
                     function.copy() // Keep original function structure
                 }
             } catch (e: Exception) {
-                project.logger.warn("Shortify: Naming engine failed: ${e.message}")
+                project.logger.warn("Shortify: Platform discovery failed: ${e.message}")
                 parsedFunctions
             }
         } else {
@@ -145,29 +147,26 @@ open class GenerateDslTask : DefaultTask() {
     }
     
     /**
-     * Generates the DSL file with error handling.
+     * Generates the DSL file with platform-aware error handling.
      */
     private fun generateDslFile(functions: List<ModifierFunction>, isDebug: Boolean): File {
         return try {
+            // Use the working generator with cross-platform foundation
             val generator = KotlinGenerator()
-            val nameMappings = if (functions.isNotEmpty()) {
-                val namingEngine = NamingEngine(project)
-                namingEngine.generateShortNames(functions)
-            } else {
-                emptyMap()
-            }
+            val namingEngine = NamingEngine(project)
+            val nameMappings = namingEngine.generateShortNames(functions)
             
             val generatedFile = generator.generateShortModifiers(functions, outputDir, nameMappings)
             
             if (isDebug && generatedFile.exists()) {
-                project.logger.debug("Shortify: Generated file contents:")
+                project.logger.debug("Shortify: Generated platform-aware file contents:")
                 project.logger.debug(generatedFile.readText())
             }
             
             generatedFile
             
         } catch (e: Exception) {
-            project.logger.error("Shortify: Failed to generate DSL file: ${e.message}")
+            project.logger.error("Shortify: Failed to generate platform-aware DSL file: ${e.message}")
             throw e
         }
     }
