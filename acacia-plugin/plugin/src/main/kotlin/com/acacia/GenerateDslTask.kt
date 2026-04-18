@@ -2,6 +2,8 @@ package com.acacia
 
 import com.acacia.generator.KotlinGenerator
 import com.acacia.model.ModifierFunction
+import com.acacia.resolver.DependencyResolver
+import com.acacia.resolver.AarExtractor
 import org.gradle.api.DefaultTask
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
@@ -38,9 +40,32 @@ open class GenerateDslTask : DefaultTask() {
         println("Shortify: Output directory: ${outputDir.absolutePath}")
         
         try {
-            // Create hardcoded modifier functions for testing
+            // Part 1: Dependency Resolution
+            println("Shortify: Resolving Compose dependencies...")
+            val resolver = DependencyResolver(project)
+            val composeArtifacts = resolver.getComposeDependencies()
+            println("Shortify: Found ${composeArtifacts.size} Compose artifacts")
+            
+            if (isDebug) {
+                composeArtifacts.forEach { artifact ->
+                    println("Shortify: - ${artifact.group}:${artifact.name}:${artifact.version}")
+                }
+            }
+            
+            // Extract jar files from artifacts
+            val extractor = AarExtractor(project)
+            val jarFiles = extractor.extractJars(composeArtifacts)
+            println("Shortify: Extracted ${jarFiles.size} jar files")
+            
+            if (isDebug) {
+                jarFiles.forEach { jar ->
+                    println("Shortify: - ${jar.name} (${jar.length()} bytes)")
+                }
+            }
+            
+            // For now, still use hardcoded functions until we implement parsing
             val modifierFunctions = getHardcodedModifierFunctions()
-            println("Shortify: Found ${modifierFunctions.size} functions to generate")
+            println("Shortify: Using ${modifierFunctions.size} hardcoded functions (parsing coming in Part 2)")
             
             // Generate the ShortModifiers.kt file
             val generator = KotlinGenerator()
@@ -49,14 +74,11 @@ open class GenerateDslTask : DefaultTask() {
             println("Shortify: Generated DSL functions in ${generatedFile.absolutePath}")
             println("Shortify: File exists: ${generatedFile.exists()}")
             
-            if (generatedFile.exists()) {
-                println("Shortify: File contents:")
-                println(generatedFile.readText())
-            }
-            
         } catch (e: Exception) {
             println("Shortify: Failed to generate DSL functions: ${e.message}")
-            e.printStackTrace()
+            if (isDebug) {
+                e.printStackTrace()
+            }
         }
         
         println("=== SHORTIFY TASK COMPLETED ===")
