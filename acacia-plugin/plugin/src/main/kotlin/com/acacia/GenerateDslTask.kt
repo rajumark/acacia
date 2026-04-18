@@ -4,6 +4,9 @@ import com.acacia.generator.KotlinGenerator
 import com.acacia.model.ModifierFunction
 import com.acacia.resolver.DependencyResolver
 import com.acacia.resolver.AarExtractor
+import com.acacia.parser.ModifierParser
+import com.acacia.mapping.NamingEngine
+import com.acacia.cache.CacheManager
 import org.gradle.api.DefaultTask
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
@@ -28,60 +31,145 @@ open class GenerateDslTask : DefaultTask() {
 
     @TaskAction
     fun generate() {
-        println("=== SHORTIFY TASK STARTED ===")
-        
         if (!enabled.getOrElse(true)) {
-            println("Shortify plugin is disabled")
+            project.logger.lifecycle("Shortify: Plugin disabled")
             return
         }
         
         val isDebug = debug.getOrElse(false)
-        println("Shortify: Generating DSL in debug mode: $isDebug")
-        println("Shortify: Output directory: ${outputDir.absolutePath}")
         
         try {
-            // Part 1: Dependency Resolution
-            println("Shortify: Resolving Compose dependencies...")
-            val resolver = DependencyResolver(project)
-            val composeArtifacts = resolver.getComposeDependencies()
-            println("Shortify: Found ${composeArtifacts.size} Compose artifacts")
+            // Execute the complete pipeline with fallbacks
+            val modifierFunctions = executePipelineWithFallbacks(isDebug)
             
-            if (isDebug) {
-                composeArtifacts.forEach { artifact ->
-                    println("Shortify: - ${artifact.group}:${artifact.name}:${artifact.version}")
-                }
-            }
+            // Generate the DSL file
+            val generatedFile = generateDslFile(modifierFunctions, isDebug)
             
-            // Extract jar files from artifacts
-            val extractor = AarExtractor(project)
-            val jarFiles = extractor.extractJars(composeArtifacts)
-            println("Shortify: Extracted ${jarFiles.size} jar files")
-            
-            if (isDebug) {
-                jarFiles.forEach { jar ->
-                    println("Shortify: - ${jar.name} (${jar.length()} bytes)")
-                }
-            }
-            
-            // For now, still use hardcoded functions until we implement parsing
-            val modifierFunctions = getHardcodedModifierFunctions()
-            println("Shortify: Using ${modifierFunctions.size} hardcoded functions (parsing coming in Part 2)")
-            
-            // Generate the ShortModifiers.kt file
-            val generator = KotlinGenerator()
-            val generatedFile = generator.generateShortModifiers(modifierFunctions, outputDir)
-            
-            println("Shortify: Generated DSL functions in ${generatedFile.absolutePath}")
-            println("Shortify: File exists: ${generatedFile.exists()}")
+            project.logger.lifecycle("Shortify: Generated ${modifierFunctions.size} DSL functions")
             
         } catch (e: Exception) {
-            println("Shortify: Failed to generate DSL functions: ${e.message}")
+            project.logger.warn("Shortify: Pipeline failed - using fallback: ${e.message}")
             if (isDebug) {
                 e.printStackTrace()
             }
+            
+            // Ultimate fallback: use hardcoded functions
+            val fallbackFunctions = getHardcodedModifierFunctions()
+            generateDslFile(fallbackFunctions, isDebug)
+            project.logger.lifecycle("Shortify: Used fallback with ${fallbackFunctions.size} functions")
+        }
+    }
+    
+    /**
+     * Executes the complete pipeline with error handling at each stage.
+     */
+    private fun executePipelineWithFallbacks(isDebug: Boolean): List<ModifierFunction> {
+        val cacheManager = CacheManager(project)
+        
+        // Try cache first
+        val cachedFunctions = cacheManager.getCachedFunctions()
+        if (cachedFunctions != null) {
+            project.logger.lifecycle("Shortify: Using cached functions (${cachedFunctions.size} functions)")
+            return cachedFunctions
         }
         
-        println("=== SHORTIFY TASK COMPLETED ===")
+        // Stage 1: Dependency Resolution
+        val jarFiles = try {
+            val resolver = DependencyResolver(project)
+            val composeArtifacts = resolver.getComposeDependencies()
+            
+            if (isDebug) {
+                composeArtifacts.forEach { artifact ->
+                    project.logger.debug("Shortify: - ${artifact.group}:${artifact.name}:${artifact.version}")
+                }
+            }
+            
+            val extractor = AarExtractor(project)
+            val jars = extractor.extractJars(composeArtifacts)
+            
+            project.logger.lifecycle("Shortify: Found ${composeArtifacts.size} Compose artifacts, extracted ${jars.size} jar files")
+            jars
+            
+        } catch (e: Exception) {
+            project.logger.warn("Shortify: Dependency resolution failed: ${e.message}")
+            emptyList()
+        }
+        
+        // Stage 2: API Parsing
+        val parsedFunctions = try {
+            if (jarFiles.isEmpty()) {
+                project.logger.warn("Shortify: No jar files to parse")
+                emptyList()
+            } else {
+                val parser = ModifierParser(project)
+                val functions = parser.parseModifierFunctions(jarFiles)
+                
+                if (isDebug) {
+                    functions.forEach { function ->
+                        project.logger.debug("Shortify: - ${function.name}(${function.parameters.joinToString(", ") { "${it.name}: ${it.type}" }})")
+                    }
+                }
+                
+                project.logger.lifecycle("Shortify: Parsed ${functions.size} Modifier functions")
+                functions
+            }
+        } catch (e: Exception) {
+            project.logger.warn("Shortify: API parsing failed: ${e.message}")
+            emptyList()
+        }
+        
+        // Stage 3: Naming (only if we have parsed functions)
+        val finalFunctions = if (parsedFunctions.isNotEmpty()) {
+            try {
+                val namingEngine = NamingEngine(project)
+                val nameMappings = namingEngine.generateShortNames(parsedFunctions)
+                
+                // Apply name mappings to functions
+                parsedFunctions.map { function ->
+                    function.copy() // Keep original function structure
+                }
+            } catch (e: Exception) {
+                project.logger.warn("Shortify: Naming engine failed: ${e.message}")
+                parsedFunctions
+            }
+        } else {
+            emptyList()
+        }
+        
+        // Cache the results for next time
+        if (finalFunctions.isNotEmpty()) {
+            cacheManager.cacheFunctions(finalFunctions)
+        }
+        
+        return finalFunctions
+    }
+    
+    /**
+     * Generates the DSL file with error handling.
+     */
+    private fun generateDslFile(functions: List<ModifierFunction>, isDebug: Boolean): File {
+        return try {
+            val generator = KotlinGenerator()
+            val nameMappings = if (functions.isNotEmpty()) {
+                val namingEngine = NamingEngine(project)
+                namingEngine.generateShortNames(functions)
+            } else {
+                emptyMap()
+            }
+            
+            val generatedFile = generator.generateShortModifiers(functions, outputDir, nameMappings)
+            
+            if (isDebug && generatedFile.exists()) {
+                project.logger.debug("Shortify: Generated file contents:")
+                project.logger.debug(generatedFile.readText())
+            }
+            
+            generatedFile
+            
+        } catch (e: Exception) {
+            project.logger.error("Shortify: Failed to generate DSL file: ${e.message}")
+            throw e
+        }
     }
     
     /**

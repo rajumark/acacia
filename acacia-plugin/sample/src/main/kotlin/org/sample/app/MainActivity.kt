@@ -10,7 +10,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowInsetsControllerCompat
+import com.acacia.generated.*
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -20,10 +23,11 @@ class MainActivity : ComponentActivity() {
         setContent {
             MaterialTheme {
                 Box(
-                    Modifier.fillMaxSize(),
+                    // Test the generated DSL functions
+                    Modifier.fmw().fmh().bg(Color.Blue).p(16.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("Plugin Sample")
+                    Text("Shortify DSL Test", color = Color.White)
                 }
             }
         }
