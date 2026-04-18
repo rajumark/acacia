@@ -4,19 +4,27 @@ plugins {
     signing
 }
 
+import org.gradle.plugin.compatibility.compatibility
+
 group = "com.acacia"
 version = libs.versions.sampleplugin.get()
 
 gradlePlugin {
-    website = "https://github.com/example/example"
-    vcsUrl = "https://github.com/example/example"
+    website.set("https://github.com/rajumark/acacia")
+    vcsUrl.set("https://github.com/rajumark/acacia")
     plugins {
         create("plugin") {
             id = "com.acacia"
             displayName = "Acacia"
-            description = "AI-Native Compose DSL Plugin"
-            tags = listOf("compose", "dsl", "ai")
+            description = "AI-Native Compose DSL Plugin - Transform verbose Compose code into concise, AI-friendly DSL"
+            tags = listOf("compose", "dsl", "ai", "android", "jetpack-compose", "code-generation")
             implementationClass = "com.acacia.ShortifyPlugin"
+            
+            compatibility {
+                features {
+                    configurationCache = true
+                }
+            }
         }
     }
 }
@@ -39,14 +47,12 @@ java {
     withJavadocJar()
 }
 
-/*
 signing {
     useInMemoryPgpKeys(
         providers.gradleProperty("signingKey").orNull,
         providers.gradleProperty("signingPassword").orNull
     )
 }
-*/
 
 /*
 // For GItHub Actions CI signing

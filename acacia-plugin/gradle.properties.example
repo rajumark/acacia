@@ -1,0 +1,73 @@
+# Gradle Plugin Portal Configuration
+# Copy this file to gradle.properties and fill in your actual values
+
+# Gradle Plugin Portal API Keys (get from https://plugins.gradle.org)
+gradle.publish.key=your_api_key_here
+gradle.publish.secret=your_api_secret_here
+
+# PGP Signing Key (generated above)
+signingKey=-----BEGIN PGP PRIVATE KEY BLOCK-----
+
+lQOYBGnjaRABCAChLxUq+nnfsoywdw/tZ5ML7+ZGJFPRZ94zDDwxGVTc1OXQ
+849K                                                        16VrRZxL3hQOYvUUD8dPO8sdoCbtd9I7ecFPxWMepCd6e+cYYV4G9ZCugWbb
+R+aO                                                        hPYQxs5fht76hol0fqyDmcFAEvJ6xu9dIQbz5DrB0be0FX6svCfekvli6K32
+huwE                                                        595T/XGw5OO3JdlBlgE4bJ/X+phXkwb+DllnAqZzRkVd1gRG3CRs36DLwjJ+
+8W9Q                                                        yySJjoMo6MWZijOLX+BqGtm/Lsn40oqq5+oc5ZJV9fDaO+oENl6Ns1VbWlqZ
+/wow                                                        SXstucA0wwhMwucU4fWjvjGeYQGLfZpeIghjABEBAAEAB/0VzJfYzbJw8iV7
+8kZZ                                                        rdHh4eqrXttlLV6MWeHEJDBpg3OnfGFLVnn9VZdLXXgp7/FEatPiX+xbD99j
+63on                                                        6BIgd0ouCTZ7psk872I3n7uXFlIyYvmIGexrnW+o1MVQbaSmeEFdtQxBXa6k
+s0YJ                                                        Ot/FWX8m2nW1adjNhM8Bl7AZ07Y73lXTdNOEZyJPuwlic1zz6+TUByYvMXQU
+2a+S                                                        u1f5YZODcZQyc3r4hn6d8M3EKac/ui97JzkS+OGDT+7vPyW91+eAeAk4EfR+
+m3nQ                                                        sJMQKpPaYoVHjx2fOsMwbwHA3KKdjxHMGJNCVUzx4tPdnYZ9ZrfWB7+5tXla
+Njnq                                                        THG5BADBSSYvUs7SF1hzNE6kefWeAeQxaMauivTvAsWNPogzFHMWBxZ9llCP
+Oim6                                                        7rc7LuJMuAw29VX7iTrvneSYsYeN5U+Wl7VNHKD9HzFDsvlWENZTC0ThEuQe
+b5L6                                                        X5dWeRpL2H66krQOm41ilhOn5UbgoLXKwKN/E1IhC8VmdNjvKQQA1Xt3iMGs
+8P58                                                        KZkC/H3vkPpwU/NnyASUsa8YljMknzuKPQYZSpKpRhYkerkb+LKngc26XfAj
+i816                                                        6iul2j1Ilhw0CPDlP3U3weMtL681gaRaV1ZoOsv+/aNxoQ8KYuhcsf5+5mCd
+zeD2                                                        iP74sAGL/oNjOaOPcpHW+R2pRFDZCKsD/3+PPf+IFptBoDfRFz7WRpEI70Ta
+/GSm                                                        TAurBD1LbT7y37eoqIzB1whefJc6UmpN3Hj+6lGIQgUF3wkGYfqTZJ3VLA/3
+dl9v                                                        cb5QYEZcRUm9x/e52bxn5CLMWsU059M5sRDOhPrUGyWtF4luN1M6j0+cw8yG
+o8bV                                                        pOl1HoKXT0p0R6m0IUFjYWNpYSBQbHVnaW4gPHBsdWdpbkBhY2FjaWEuZGV2
+PokB                                                        TgQTAQoAOBYhBJciuzgrG+yUq42RsgDNuQif3KdEBQJp42kQAhsvBQsJCAcC
+BhUK                                                        CQgLAgQWAgMBAh4BAheAAAoJEADNuQif3KdEehcH/08wZ4hWVCuTHemccmAf
++zFI                                                        3CVl/By5RfW5sF7FTh2eRLVLRcziiBEvcJ5PHk5Iou/p4p0HZ0dqNfmyOImh
+Ksdp                                                        NjQj/nzFjB75gRNZWtGZGjakA9skEDRSx3giXesLhAJv053ZRW6dptHYMRnS
+XWUJ                                                        EOF1wSCa2HgjKItl+z+qjXTCTSeqkW5gBTEgMc5RJPPIe3oLS8pWyxPwNPTU
+w0hH                                                        z5ignsZxyRLyEGqnTb0I5cpOgyZkV4TkrcR8Dap7T9Gfzys47zLEWgfZNLZn
+b3dS                                                        4AzVd2mi8g8y6QlPHrrbgrN+sTgYaRkFOfOB5UEkqC6ahs6XzzRivsY6RHxw
+N2id                                                        A5gEaeNpEAEIAL4onvrd1rFtsZss9IuW+l6yGaIRN1+hTMrFCDEE6k7nDJMl
+bE5c                                                        jWKauP4WxziWDifvqXHD/bsrqGFOPBgEol+TMjr+hEMUf9UkWVIyYwlWLysR
+VxAR                                                        SaCmCUSJlweK9L6C97tVK/9IX/0k2vvwWbnkk89clbtxIJcD6f8URT3/U9dn
+90Jg                                                        s+Q0CNzE+1M9okhoOMMOBRpowPx9t2y08ophze5Ol7mxXryxnF+H/Gpe5AmR
+hZiM                                                        6WLLCuqI5Xx3LYQPNN9j6A+f00Xft+Tdu8I0qcz161o7cyrlibt0VrKMkBR3
+3IKg                                                        feIFojva6WN6X5ZUzMrw9GGFPWTynZR9640AEQEAAQAH/A/CT4yUSmjZYaTt
+yJVx                                                        7W1gHqo0+Y0SEcpjIk7nrKBd2wetzAhBeNEhZ+/cxOVeYC10mesM9k/m6hUo
+Vega                                                        qDc5/GlxstXZUs+/66wZc2Ywb4fG79trx1mKMQ3uRicwn6BTO8MZZ6RII/ZX
+cdN7                                                        w3/ZnttKPblzQmNphmCmlidxRwPlLRTlfRSj78xZy7J8N5B7YKuLwGfjiSG7
+jpiQ                                                        l/L6lUWEadhzuqmvDG7VmNSKWCdoFZzDEQsyQa7EAmleYvjGA2dzoxxJw8jx
+bbSX                                                        MgaZFGD2h8RWIpHwR7jC4F1+0IfwluYPHuJtmHMqy5VVuPlgYZm+JiOnflHs
+U93h                                                        xFkEAMaA5JGxlX8g4Nxsqu4m0zfN0mdXjGPFgWSAHF0uOq5CwsWXAC0CoAvx
+LgOx                                                        WiBj3atmPYm1G4+qkbMMcKd3Id6CJG+B7DssWxG764SZUpU4r5U3dk+HE/Ok
+EjDI                                                        5D3MPMWv2LkuqBAOJELPD+2YdXQMJcN0OL/eC8nSR9MLuptVBAD1PPUQIXJY
+u3/u                                                        SgM2ZCsQjGGb+Q4tGlFy1q5s/HHgR7zPU7Qdxi695pg/Zq+vH4ls3/qmsCPb
+xnfT                                                        bhH3CrRN4Wga+Zxd4cEeB+M5kytYCc23Sm3XAjYIJJeezJFXIpyqe5IN0NpN
+BQfs                                                        QDoyncRv5qUoLrnQMl9+RsL7KtQ/WQQAjqMkW/BeFZZKGT53wMDW8N6dBIxB
+7/0z                                                        LdvztnG29rYHIJQ6Ey+9EDwb0a9277BfmxHtnKMYNvolNcb+NknC8QSJPoa1
+nJYa                                                        0yoaCvNHSzD/YEJ7LDxk/TtbKiQJM3HoL7KnTMts7ZffcZsQbWoi5Zg5mYwS
+fbgf                                                        pIT6TXUECWs8a4kCbAQYAQoAIBYhBJciuzgrG+yUq42RsgDNuQif3KdEBQJp
+42kQ                                                        AhsuAUAJEADNuQif3KdEwHQgBBkBCgAdFiEEgAkpCHZJwra/y7J26DOaten8
+gBYF                                                        AmnjaRAACgkQ6DOaten8gBbyNAf/QYpVtJ3tdSHvckxwV2HJRNdU+7mGc4sM
+FsSO                                                        sMylm4Ljv7kvb7vlBehLSiStAptEeDfKvJx7Uldwcs1KMChoFF1WHAtxWGkv
+r8sm                                                        3muxj6ipQx5dhUA0pOhc8ON5f7XE5HRrgKfr3CJk8wFc8A39FM17ZAe7dzN/
+X/yG                                                        vLc+FQyn8BBuhgKan82jv5cGo22KmIK4zC5iy1xYA+7gy6/MHJWAiVtS+673
+gshq                                                        vHza0EDZQziiwQgLDMc4nvuntpZDaRKxxlnQT8S66Ol7PZbdhVtZx9PTe1c8
+T1Td                                                        PMkpZgX7MTlamYMHIPdvyIjyPXTXEQSRXHBth50iDfIndkILf2P6B/9Xbzo2
+SCWg                                                        1Os96hLSQkFoJQCd/cgqsnvAX0d740wH2pBGXK9jQQgU3Qn4U1wNqp54VN9I
+CChU                                                        +VM3CrD3FI4Tm9nqH6nLQUcddw6I9UPN8FykYLR5i47Wp2FpfaTi7moXG3Kl
+JqAs                                                        fOBlhwdTfUNWzEnm62mmue1tn8r5tOl1QvCD2Q0CLLFmqtO/swXvE0znYHtJ
+ky2G                                                        ATzgoWMmR2h/+LmHYKXKQ272ny5vMqeHT908ncRbBkZF9++fA0lea21TgucG
+ViM7                                                        9Vf7CeyFxwHTTk63pvS4WJUeQE7sCGawmnwgyILcbaYT+EvO4Aa9R1FKC53b
+bEo2                                                        QO65sfj2mTb+
+=hXhM
+-----END PGP PRIVATE KEY BLOCK-----
+signingPassword=
