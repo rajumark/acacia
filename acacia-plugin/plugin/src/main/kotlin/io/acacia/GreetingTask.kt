@@ -5,7 +5,9 @@ import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.TaskAction
+import org.gradle.api.tasks.CacheableTask
 
+@CacheableTask
 abstract class GreetingTask : DefaultTask() {
     @get:Optional
     @get:Input

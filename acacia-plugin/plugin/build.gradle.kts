@@ -36,12 +36,14 @@ java {
     withJavadocJar()
 }
 
+/*
 signing {
     useInMemoryPgpKeys(
         providers.gradleProperty("signingKey").orNull,
         providers.gradleProperty("signingPassword").orNull
     )
 }
+*/
 
 /*
 // For GItHub Actions CI signing
