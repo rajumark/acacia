@@ -3,597 +3,337 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Acacia — The Compose UI Vibe Engine</title>
+<title>Acacia — Optimizer</title>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
+    --blue: #4285F4;
+    --green: #34A853;
+    --yellow: #FBBC04;
+    --red: #EA4335;
     --bg: #ffffff;
-    --bg-mesh: #f9fafb;
-    --leaf-green: #0F6E56;
-    --leaf-light: #E1F5EE;
-    --forest-dark: #062d23;
-    --text: #1a1a1a;
-    --text-soft: #4a4a4a;
-    --text-muted: #8c8c8c;
-    --border: rgba(15, 110, 86, 0.1);
-    --border-strong: rgba(15, 110, 86, 0.2);
-    --radius: 12px;
-    --radius-lg: 24px;
-    --mono: 'JetBrains Mono', 'Fira Code', monospace;
-    --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-
-    /* Android Studio Light Theme Palette */
-    --as-bg: #ffffff;
-    --as-keyword: #0033b3;
-    --as-function: #00627a;
-    --as-string: #067d17;
-    --as-number: #1750eb;
-    --as-comment: #8c8c8c;
-    --as-annotation: #9e880d;
-    --as-param: #248f8f;
+    --code-bg: #f8fafc;
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+    --border: #e2e8f0;
+    --mono: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
   }
-
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #06120e;
-      --bg-mesh: #0a1a15;
-      --leaf-green: #5DCAA5;
-      --leaf-light: #0d2b23;
-      --forest-dark: #ecfdf5;
-      --text: #f0fdf4;
-      --text-soft: #a7f3d0;
-      --text-muted: #5b8a78;
-      --border: rgba(93, 202, 165, 0.15);
-      --border-strong: rgba(93, 202, 165, 0.3);
-    }
-  }
-
-  html { scroll-behavior: smooth; }
 
   body {
-    font-family: var(--sans);
-    background: var(--bg);
-    color: var(--text);
-    line-height: 1.6;
-    overflow-x: hidden;
-  }
-
-  /* REFINED LEAF BACKGROUND */
-  .leaf-bg {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: -1;
-    pointer-events: none;
-    opacity: 0.3;
-  }
-
-  nav {
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
+    background-color: var(--bg);
+    background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
+    background-size: 32px 32px;
+    color: var(--text-main);
     display: flex;
+    justify-content: center;
     align-items: center;
-    justify-content: space-between;
-    padding: 1.2rem 2.5rem;
-    position: sticky;
-    top: 0;
-    background: rgba(255, 255, 255, 0.85);
-    backdrop-filter: blur(16px);
-    border-bottom: 1px solid var(--border);
+    min-height: 100vh;
+    padding: 24px;
+    overflow: hidden;
+  }
+
+  /* Branding Header */
+  .brand-header {
+    position: absolute;
+    top: 40px;
+    left: 40px;
     z-index: 100;
   }
 
-  @media (prefers-color-scheme: dark) {
-    nav { background: rgba(6, 18, 14, 0.85); }
-  }
-
-  .nav-logo {
-    font-size: 16px;
-    font-weight: 800;
-    color: var(--leaf-green);
-    text-decoration: none;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-  }
-
-  .logo-icon {
-    width: 32px;
-    height: 32px;
-    fill: currentColor;
-  }
-
-  .nav-links {
-    display: flex;
-    align-items: center;
-    gap: 2.5rem;
-    list-style: none;
-  }
-
-  .nav-links a {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text-soft);
-    text-decoration: none;
-    letter-spacing: 0.5px;
-    transition: color 0.2s;
-  }
-
-  .nav-links a:hover { color: var(--leaf-green); }
-
-  .nav-btn {
-    padding: 10px 22px;
-    border-radius: 100px;
-    background: var(--leaf-green);
-    color: #fff !important;
-    font-size: 13px;
-    font-weight: 700;
-  }
-
-  .hero {
-    padding: 9rem 2rem 6rem;
-    text-align: center;
-    max-width: 1100px;
-    margin: 0 auto;
-  }
-
-  .hero-tag {
-    display: inline-block;
-    background: var(--leaf-light);
-    color: var(--leaf-green);
-    padding: 6px 16px;
-    border-radius: 100px;
-    font-size: 11px;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    margin-bottom: 2rem;
-  }
-
-  .hero h1 {
-    font-size: clamp(54px, 10vw, 108px);
-    font-weight: 300;
-    line-height: 0.92;
-    letter-spacing: -5px;
-    margin-bottom: 2.5rem;
-    color: var(--text);
-  }
-
-  .hero h1 em {
-    font-style: normal;
-    color: var(--leaf-green);
-    font-weight: 500;
-    display: block;
-  }
-
-  .hero-sub {
-    font-size: 22px;
-    color: var(--text-soft);
-    max-width: 680px;
-    margin: 0 auto 3.5rem;
-    font-weight: 400;
-    line-height: 1.5;
-  }
-
-  .btn-group {
-    display: flex;
-    gap: 16px;
-    justify-content: center;
-    margin-bottom: 6rem;
-  }
-
-  .btn-main {
-    padding: 18px 42px;
-    border-radius: 100px;
-    background: var(--leaf-green);
-    color: #fff;
-    font-size: 16px;
-    font-weight: 700;
-    border: none;
-    cursor: pointer;
-    box-shadow: 0 10px 30px rgba(15, 110, 86, 0.15);
-  }
-
-  .btn-outline {
-    padding: 18px 42px;
-    border-radius: 100px;
-    background: transparent;
-    color: var(--text);
-    font-size: 16px;
-    font-weight: 700;
-    border: 1px solid var(--border-strong);
-    cursor: pointer;
-  }
-
-  .showcase {
-    padding: 4rem 2rem 8rem;
-    max-width: 1200px;
-    margin: 0 auto;
-  }
-
-  .showcase-header {
-    text-align: center;
-    margin-bottom: 4.5rem;
-  }
-
-  .showcase-header h2 {
-    font-size: 36px;
-    font-weight: 400;
+  .brand-header h1 {
+    font-size: 28px;
     letter-spacing: -1.5px;
+    font-weight: 800;
+    margin: 0;
+    user-select: none;
   }
 
-  .code-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 2.5rem;
+  .brand-header h1 span { color: var(--blue); }
+
+  /* Scissors Animation */
+  #scissors {
+    position: fixed;
+    pointer-events: none;
+    z-index: 200;
+    font-size: 32px;
+    transition: all 0.25s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(-45deg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));
   }
 
-  @media (max-width: 900px) {
-    .code-grid { grid-template-columns: 1fr; }
+  #scissors.active {
+    opacity: 1;
+    animation: snip 0.2s ease infinite;
   }
 
-  .window {
-    background: var(--as-bg);
-    border: 1px solid #dcdcdc;
-    border-radius: 10px;
-    overflow: hidden;
-    box-shadow: 0 15px 45px rgba(0,0,0,0.06);
+  @keyframes snip {
+    0%, 100% { transform: translate(-50%, -50%) rotate(-45deg) scale(1); }
+    50% { transform: translate(-50%, -50%) rotate(-45deg) scale(1.3) rotateX(30deg); }
+  }
+
+  /* Token Badge (Persistent) */
+  .token-badge {
+    display: inline-flex;
+    align-items: center;
+    background: var(--green);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 800;
+    margin-left: 12px;
+    vertical-align: middle;
+    opacity: 0;
+    transform: scale(0.5);
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .token-badge.visible {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  .main-stage {
+    width: 100%;
+    max-width: 800px;
     position: relative;
   }
 
-  .window-top {
-    padding: 10px 18px;
-    background: #f8f8f8;
-    border-bottom: 1px solid #dcdcdc;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .window-dots {
-    display: flex;
-    gap: 6px;
-  }
-
-  .dot { width: 11px; height: 11px; border-radius: 50%; background: #e0e0e0; border: 1px solid #d0d0d0; }
-
-  .window-label {
-    font-size: 11px;
-    font-weight: 700;
-    color: #888;
-    font-family: var(--sans);
-    letter-spacing: 0.5px;
-  }
-
-  .token-badge {
-    position: absolute;
-    top: 52px;
-    right: 20px;
-    background: #f1f1f1;
-    border: 1px solid #e1e1e1;
-    padding: 5px 12px;
-    border-radius: 8px;
-    font-family: var(--mono);
-    font-size: 11px;
-    color: #555;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    z-index: 10;
-  }
-
-  .token-badge.premium {
-    background: var(--leaf-light);
-    border-color: rgba(15, 110, 86, 0.3);
-    color: var(--leaf-green);
-    font-weight: 800;
-  }
-
-  .code-block {
-    padding: 32px 24px 24px;
-    font-family: var(--mono);
-    font-size: 13.5px;
-    line-height: 1.7;
-    overflow-x: auto;
-    color: #000;
-    white-space: pre;
-  }
-
-  /* SYNTAX HIGHLIGHTING - AS LIGHT */
-  .s-kw { color: var(--as-keyword); font-weight: 600; }
-  .s-fn { color: var(--as-function); }
-  .s-str { color: var(--as-string); }
-  .s-num { color: var(--as-number); }
-  .s-cmt { color: var(--as-comment); font-style: italic; }
-  .s-ann { color: var(--as-annotation); }
-  .s-p { color: var(--as-param); }
-
-  .features {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 2.5rem;
-    padding: 6rem 2rem;
-    background: var(--bg-mesh);
-    border-top: 1px solid var(--border);
-  }
-
-  @media (max-width: 800px) {
-    .features { grid-template-columns: 1fr; }
-  }
-
-  .feat-card {
-    padding: 3rem;
-    border-radius: var(--radius-lg);
-    background: var(--bg);
+  /* Code Panel */
+  .panel {
+    background: var(--code-bg);
     border: 1px solid var(--border);
-    transition: transform 0.3s ease;
+    border-radius: 32px;
+    padding: 64px;
+    position: relative;
+    box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.1);
+    min-height: 500px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .code {
+    font-family: var(--mono);
+    font-size: 18px;
+    line-height: 2.4;
+    white-space: pre;
+    color: var(--text-muted);
+  }
+
+  .line-container {
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+  }
+
+  .h-light {
+    display: inline-block;
+    padding: 0 4px;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+    font-weight: 600;
+    position: relative;
+  }
+
+  .h-active {
+    background: #ffffff;
+    box-shadow: 0 4px 12px rgba(66, 133, 244, 0.1);
+    color: var(--blue) !important;
+  }
+
+  .del-char {
+    color: var(--red);
+    text-decoration: line-through;
+    opacity: 1;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    display: inline-block;
   }
   
-  .feat-card:hover { transform: translateY(-5px); }
+  .del-char.gone {
+    width: 0;
+    opacity: 0;
+    transform: translateY(-15px) rotate(15deg) scale(0);
+  }
 
-  .feat-icon {
-    width: 54px;
-    height: 54px;
-    background: var(--leaf-light);
-    border-radius: 14px;
+  /* Success State */
+  .savings-card {
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.98);
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    color: var(--leaf-green);
-    margin-bottom: 1.8rem;
-  }
-
-  .waitlist {
-    margin: 8rem 2rem;
-    padding: 6rem 2rem;
-    background: var(--forest-dark);
-    color: white;
-    border-radius: var(--radius-lg);
+    z-index: 50;
+    backdrop-filter: blur(12px);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.6s ease;
+    border-radius: 32px;
     text-align: center;
-    background-image: radial-gradient(circle at top right, rgba(15, 110, 86, 0.2), transparent);
   }
 
-  .waitlist h2 {
-    font-size: 48px;
-    font-weight: 300;
-    letter-spacing: -2px;
-    margin-bottom: 1.5rem;
-  }
+  .savings-card.show { opacity: 1; pointer-events: auto; }
+  .savings-card h2 { font-size: 56px; color: var(--green); font-weight: 900; margin-bottom: 8px; letter-spacing: -2px; }
 
-  .input-wrap {
-    display: flex;
-    max-width: 520px;
-    margin: 0 auto;
-    background: rgba(255,255,255,0.08);
-    padding: 8px;
-    border-radius: 100px;
-    border: 1px solid rgba(255,255,255,0.15);
-    backdrop-filter: blur(10px);
-  }
-
-  .input-wrap input {
-    flex: 1;
-    background: transparent;
+  .replay-btn {
+    margin-top: 32px;
     border: none;
-    padding: 0 28px;
+    background: var(--text-main);
     color: white;
-    font-size: 16px;
-    outline: none;
-  }
-
-  .input-wrap button {
-    background: white;
-    color: var(--forest-dark);
-    border: none;
-    padding: 14px 36px;
+    padding: 16px 36px;
     border-radius: 100px;
-    font-weight: 800;
-    font-size: 15px;
     cursor: pointer;
-    transition: opacity 0.2s;
+    font-weight: 700;
+    font-size: 14px;
+    transition: all 0.2s;
   }
 
-  .input-wrap button:hover { opacity: 0.9; }
+  .replay-btn:hover { transform: translateY(-2px); background: black; box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
 
-  footer {
-    padding: 6rem 2rem;
-    text-align: center;
-    border-top: 1px solid var(--border);
-  }
-
-  .footer-logo {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    font-weight: 900;
-    color: var(--leaf-green);
-    letter-spacing: 3px;
-    margin-bottom: 2.5rem;
-  }
-
-  /* ACACIA LEAF PATTERN */
-  .leaf-pattern {
-    position: absolute;
-    width: 280px;
-    height: 280px;
-    fill: var(--leaf-green);
-    opacity: 0.06;
+  @media (max-width: 640px) {
+    .panel { padding: 40px 24px; border-radius: 20px; }
+    .code { font-size: 14px; }
+    .brand-header { top: 20px; left: 20px; }
   }
 </style>
 </head>
 <body>
 
-<!-- CUSTOM ACACIA LEAF LOGO DEFINITION -->
-<svg style="display: none;">
-  <symbol id="acacia-leaf" viewBox="0 0 100 100">
-    <!-- Central stem -->
-    <path d="M50 95 Q50 50 50 5" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"/>
-    <!-- Leaflets -->
-    <path d="M50 20 L65 15 Q70 15 65 25 L50 30" />
-    <path d="M50 20 L35 15 Q30 15 35 25 L50 30" />
-    <path d="M50 35 L68 30 Q75 30 68 42 L50 48" />
-    <path d="M50 35 L32 30 Q25 30 32 42 L50 48" />
-    <path d="M50 50 L72 45 Q80 45 72 58 L50 65" />
-    <path d="M50 50 L28 45 Q20 45 28 58 L50 65" />
-    <path d="M50 65 L70 62 Q78 62 70 73 L50 80" />
-    <path d="M50 65 L30 62 Q22 62 30 73 L50 80" />
-    <path d="M50 80 L62 78 Q68 78 62 86 L50 90" />
-    <path d="M50 80 L38 78 Q32 78 38 86 L50 90" />
-  </symbol>
-</svg>
+<div id="scissors">✂️</div>
 
-<div class="leaf-bg">
-  <svg class="leaf-pattern" style="top: 5%; left: -100px; transform: rotate(35deg);">
-    <use href="#acacia-leaf"/>
-  </svg>
-  <svg class="leaf-pattern" style="bottom: 10%; right: -100px; transform: rotate(-145deg);">
-    <use href="#acacia-leaf"/>
-  </svg>
-</div>
+<header class="brand-header">
+  <h1>Acacia<span>.</span></h1>
+</header>
 
-<nav>
-  <a class="nav-logo" href="#">
-    <svg class="logo-icon"><use href="#acacia-leaf"/></svg>
-    ACACIA
-  </a>
-  <ul class="nav-links">
-    <li><a href="#showcase">Showcase</a></li>
-    <li><a href="#stack">Tech Stack</a></li>
-    <li><a class="nav-btn" href="#waitlist">Early Access</a></li>
-  </ul>
-</nav>
+<main class="main-stage">
+  <div class="panel">
+    <div class="savings-card" id="savingsCard">
+      <div style="font-size: 48px; margin-bottom: 16px;">✨</div>
+      <h2 id="finalSavings">66% Less Tokens</h2>
+      <p style="text-transform: uppercase; font-weight: 700; color: var(--text-muted); letter-spacing: 2px;">Context Pruning Complete</p>
+      <button class="replay-btn" onclick="resetAnimation()">OPTIMIZE AGAIN</button>
+    </div>
 
-<section class="hero">
-  <span class="hero-tag">Vibe-First Compose</span>
-  <h1>Compose UIs that<br><em>Grow effortlessly.</em></h1>
-  <p class="hero-sub">
-    The ultimate utility tree for Jetpack Compose. Acacia prunes the Modifier noise, leaving only the logic your VibeCoder heart desires.
-  </p>
-  <div class="btn-group">
-    <button class="btn-main">Get Early Access</button>
-    <button class="btn-outline">Read Manifesto</button>
+    <div class="code" id="mainCode">
+<div class="line-container"><span class="h-light" id="line1">Column</span>(<span id="badge1" class="token-badge"></span></div><div class="line-container">  mod = Mod</div><div class="line-container">    .<span class="h-light" id="line2">fillMaxWidth()</span><span id="badge2" class="token-badge"></span></div><div class="line-container">    .<span class="h-light" id="line3">padding(16.dp)</span><span id="badge3" class="token-badge"></span></div><div class="line-container">    .<span class="h-light" id="line4">clip(Rounded(8))</span><span id="badge4" class="token-badge"></span></div><div class="line-container">    .<span class="h-light" id="line5">background(Surface)</span><span id="badge5" class="token-badge"></span></div><div class="line-container">) {</div><div class="line-container">  <span class="h-light" id="line6">Text</span>("Hello")<span id="badge6" class="token-badge"></span></div><div class="line-container">  <span class="h-light" id="line7">Spacer</span>(Mod.h(8.dp))<span id="badge7" class="token-badge"></span></div><div class="line-container">}</div></div>
   </div>
-</section>
+</main>
 
-<section class="showcase" id="showcase">
-  <div class="showcase-header">
-    <h2>Verbose Corporate vs. <em>Acacia Vibe</em></h2>
-  </div>
+<script>
+  const mappings = {
+    line1: { std: "Column", acc: "Col", cost: 12 },
+    line2: { std: "fillMaxWidth()", acc: "fMW()", cost: 24 },
+    line3: { std: "padding(16.dp)", acc: "p(16.dp)", cost: 18 },
+    line4: { std: "clip(Rounded(8))", acc: "clp(R(8))", cost: 20 },
+    line5: { std: "background(Surface)", acc: "bg(Surf)", cost: 22 },
+    line6: { std: "Text", acc: "Txt", cost: 10 },
+    line7: { std: "Spacer", acc: "Sp", cost: 15 }
+  };
 
-  <div class="code-grid">
-    <!-- Corporate Column -->
-    <div class="window">
-      <div class="window-top">
-        <div class="window-dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
-        <span class="window-label">StandardProfile.kt</span>
-      </div>
-      <div class="token-badge">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/></svg>
-        <span>142 Tokens</span>
-      </div>
-      <div class="code-block">
-<span class="s-ann">@Composable</span>
-<span class="s-kw">fun</span> <span class="s-fn">ProfileCard</span>(<span class="s-p">user</span>: User) {
-    <span class="s-fn">Column</span>(
-        modifier = Modifier
-            .<span class="s-fn">fillMaxWidth</span>()
-            .<span class="s-fn">padding</span>(<span class="s-num">16</span>.<span class="s-fn">dp</span>)
-            .<span class="s-fn">background</span>(MaterialTheme.colorScheme.surface)
-            .<span class="s-fn">clip</span>(<span class="s-fn">RoundedCornerShape</span>(<span class="s-num">12</span>.<span class="s-fn">dp</span>)),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        <span class="s-fn">Text</span>(
-            text = user.name,
-            style = MaterialTheme.typography.titleLarge
-        )
-        <span class="s-fn">Spacer</span>(Modifier.<span class="s-fn">height</span>(<span class="s-num">8</span>.<span class="s-fn">dp</span>))
-        <span class="s-fn">Button</span>(onClick = { <span class="s-cmt">/* auth */</span> }) {
-            <span class="s-fn">Text</span>(<span class="s-str">"Connect"</span>)
-        }
+  const totalSteps = 7;
+  let currentStep = 1;
+  let interval;
+  let autoReplayTimeout;
+
+  const savingsCard = document.getElementById('savingsCard');
+  const scissors = document.getElementById('scissors');
+
+  function moveScissorsTo(element) {
+    const rect = element.getBoundingClientRect();
+    scissors.style.left = `${rect.left + rect.width / 2}px`;
+    scissors.style.top = `${rect.top + rect.height / 2}px`;
+    scissors.classList.add('active');
+  }
+
+  function transformText(id) {
+    const el = document.getElementById(id);
+    const stepNum = id.replace('line', '');
+    const badge = document.getElementById('badge' + stepNum);
+    const config = mappings[id];
+    const std = config.std;
+    const acc = config.acc;
+    
+    let html = '';
+    for(let char of std) {
+      if (!acc.includes(char)) {
+        html += `<span class="del-char">${char}</span>`;
+      } else {
+        html += char;
+      }
     }
-}</div>
-    </div>
+    el.innerHTML = html;
 
-    <!-- Acacia Column -->
-    <div class="window" style="border-color: var(--leaf-green); border-width: 1.5px;">
-      <div class="window-top" style="background: #f4fcf8;">
-        <div class="window-dots"><div class="dot" style="background:var(--leaf-green); border-color: transparent;"></div><div class="dot" style="background:var(--leaf-green); border-color: transparent;"></div><div class="dot" style="background:var(--leaf-green); border-color: transparent;"></div></div>
-        <span class="window-label" style="color:var(--leaf-green)">AcaciaProfile.kt</span>
-      </div>
-      <div class="token-badge premium">
-        <svg width="12" height="12"><use href="#acacia-leaf"/></svg>
-        <span>68 Tokens</span>
-      </div>
-      <div class="code-block">
-<span class="s-ann">@Composable</span>
-<span class="s-kw">fun</span> <span class="s-fn">ProfileCard</span>(<span class="s-p">user</span>: User) {
-    <span class="s-fn">VibeColumn</span>(
-        p = <span class="s-num">16</span>, 
-        bg = Surface, 
-        r = <span class="s-num">12</span>,
-        align = Center
-    ) {
-        <span class="s-fn">Title</span>(user.name)
-        
-        <span class="s-fn">Gap</span>(<span class="s-num">8</span>)
-        
-        <span class="s-fn">LeafButton</span>(<span class="s-str">"Connect"</span>) {
-            <span class="s-cmt">// Vibe check passed</span>
-        }
+    setTimeout(() => {
+      moveScissorsTo(el);
+      
+      const chars = el.querySelectorAll('.del-char');
+      chars.forEach((c, i) => {
+        setTimeout(() => c.classList.add('gone'), i * 40);
+      });
+
+      // Show persistent badge
+      setTimeout(() => {
+        el.innerText = acc;
+        badge.innerText = `-${config.cost}`;
+        badge.classList.add('visible');
+        scissors.classList.remove('active');
+      }, 500);
+    }, 600);
+  }
+
+  function resetAnimation() {
+    clearInterval(interval);
+    clearTimeout(autoReplayTimeout);
+    currentStep = 1;
+    savingsCard.classList.remove('show');
+    
+    // Reset badges
+    document.querySelectorAll('.token-badge').forEach(b => {
+        b.classList.remove('visible');
+        b.innerText = '';
+    });
+    
+    // Reset text
+    Object.keys(mappings).forEach(id => {
+      document.getElementById(id).innerText = mappings[id].std;
+    });
+
+    interval = setInterval(step, 2400);
+    step();
+  }
+
+  function step() {
+    document.querySelectorAll('.h-light').forEach(el => el.classList.remove('h-active'));
+    
+    if (currentStep > totalSteps) {
+      setTimeout(() => {
+        savingsCard.classList.add('show');
+        autoReplayTimeout = setTimeout(resetAnimation, 6000);
+      }, 1000);
+      clearInterval(interval);
+      return;
     }
-}</div>
-    </div>
-  </div>
-</section>
 
-<section class="features" id="stack">
-  <div class="feat-card">
-    <div class="feat-icon">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-    </div>
-    <h3>Layered Safety</h3>
-    <p>Corporate stability meets the "Vibe" layer. Pure Kotlin under the hood with 0% runtime overhead.</p>
-  </div>
-  <div class="feat-card">
-    <div class="feat-icon">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-    </div>
-    <h3>LLM Native</h3>
-    <p>Optimized for AI prompt engineering. Shorter code means better context retention and zero hallucinations.</p>
-  </div>
-  <div class="feat-card">
-    <div class="feat-icon">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8l4 4-4 4M8 12h7"/></svg>
-    </div>
-    <h3>Vibe-Compiled</h3>
-    <p>KSP2 processors automatically generate the boilerplate you used to write by hand. Ship faster.</p>
-  </div>
-</section>
+    const id = 'line' + currentStep;
+    const target = document.getElementById(id);
+    if (target) {
+        target.classList.add('h-active');
+        transformText(id);
+    }
+    currentStep++;
+  }
 
-<section class="waitlist" id="waitlist">
-  <h2>Enter the Forest.</h2>
-  <p style="color: rgba(255,255,255,0.6); margin-bottom: 2.5rem;">The waitlist is growing. Join the top 1% of Compose Engineers.</p>
-  <div class="input-wrap">
-    <input type="email" placeholder="vibe.coder@company.com">
-    <button>Get Access</button>
-  </div>
-</section>
-
-<footer>
-  <div class="footer-logo">
-    <svg class="logo-icon" style="width: 24px; height: 24px;"><use href="#acacia-leaf"/></svg>
-    ACACIA
-  </div>
-  <div style="font-size: 13px; color: var(--text-muted); max-width: 400px; margin: 0 auto 2.5rem;">
-    The framework that treats your UI like a living organism. Beautiful, efficient, and resilient.
-  </div>
-  <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">
-    &copy; 2024 Acacia UI. All rights reserved.
-  </div>
-</footer>
+  // Initial start
+  setTimeout(resetAnimation, 500);
+</script>
 
 </body>
 </html>
