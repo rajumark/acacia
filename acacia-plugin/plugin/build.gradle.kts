@@ -4,7 +4,7 @@ plugins {
     signing
 }
 
-group = "io.acacia"
+group = "com.acacia"
 version = libs.versions.sampleplugin.get()
 
 gradlePlugin {
@@ -12,11 +12,11 @@ gradlePlugin {
     vcsUrl = "https://github.com/example/example"
     plugins {
         create("plugin") {
-            id = "io.acacia"
+            id = "com.acacia"
             displayName = "Acacia"
-            description = "Kotlin Language Efficiency Tool"
-            tags = listOf("example")
-            implementationClass = "io.acacia.GreetingPlugin"
+            description = "AI-Native Compose DSL Plugin"
+            tags = listOf("compose", "dsl", "ai")
+            implementationClass = "com.acacia.ShortifyPlugin"
         }
     }
 }

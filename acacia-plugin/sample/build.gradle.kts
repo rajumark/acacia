@@ -1,7 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.compose.compiler)
-    id("io.acacia")
+    id("com.acacia")
 }
 
 android {
@@ -20,8 +20,9 @@ kotlin {
     jvmToolchain(libs.versions.gradle.jvmToolchain.get().toInt())
 }
 
-greeting {
-    who = "Acacia"
+shortify {
+    enabled = true
+    debug = true
 }
 
 dependencies {
