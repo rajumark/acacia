@@ -9,6 +9,8 @@ import com.acacia.mapping.NamingEngine
 import com.acacia.cache.CacheManager
 import com.acacia.platform.PlatformModifierDiscovery
 import com.acacia.platform.PlatformCodeGenerator
+import com.acacia.documentation.AiDocumentationGenerator
+import com.acacia.documentation.AiTrainingDataGenerator
 import org.gradle.api.DefaultTask
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
@@ -47,7 +49,10 @@ open class GenerateDslTask : DefaultTask() {
             // Generate the DSL file
             val generatedFile = generateDslFile(modifierFunctions, isDebug)
             
-            project.logger.lifecycle("Shortify: Generated ${modifierFunctions.size} DSL functions")
+            // Generate AI documentation and training data
+            generateAiDocumentation(modifierFunctions, isDebug)
+            
+            project.logger.lifecycle("Shortify: Generated ${modifierFunctions.size} DSL functions in ${generatedFile.absolutePath}")
             
         } catch (e: Exception) {
             project.logger.warn("Shortify: Pipeline failed - using fallback: ${e.message}")
@@ -168,6 +173,36 @@ open class GenerateDslTask : DefaultTask() {
         } catch (e: Exception) {
             project.logger.error("Shortify: Failed to generate platform-aware DSL file: ${e.message}")
             throw e
+        }
+    }
+    
+    /**
+     * Generates AI-friendly documentation and training data.
+     */
+    private fun generateAiDocumentation(functions: List<ModifierFunction>, isDebug: Boolean) {
+        try {
+            val documentationOutputDir = project.layout.buildDirectory.dir("generated/documentation/ai").get().asFile
+            
+            // Generate AI documentation
+            val docGenerator = AiDocumentationGenerator(project)
+            val documentationFile = docGenerator.generateAiDocumentation(functions, documentationOutputDir)
+            
+            // Generate AI training data
+            val trainingGenerator = AiTrainingDataGenerator(project)
+            val trainingFile = trainingGenerator.generateAiTrainingData(functions, documentationOutputDir)
+            
+            if (isDebug) {
+                project.logger.debug("Shortify: Generated AI documentation: ${documentationFile.absolutePath}")
+                project.logger.debug("Shortify: Generated AI training data: ${trainingFile.absolutePath}")
+            }
+            
+            project.logger.lifecycle("Shortify: Generated AI documentation and training data")
+            
+        } catch (e: Exception) {
+            project.logger.warn("Shortify: Failed to generate AI documentation: ${e.message}")
+            if (isDebug) {
+                e.printStackTrace()
+            }
         }
     }
     
