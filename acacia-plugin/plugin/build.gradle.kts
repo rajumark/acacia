@@ -25,6 +25,7 @@ dependencies {
     compileOnly(gradleKotlinDsl())
     implementation(libs.kotlin.gradle)
     implementation(libs.android.gradle)
+    implementation("com.squareup:kotlinpoet:1.17.0")
 }
 
 kotlin {
