@@ -3,49 +3,49 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Acacia — Efficient Project Tree with Smallest Leaves</title>
+<title>Acacia — The Compose UI Vibe Engine</title>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
     --bg: #ffffff;
-    --bg2: #f7f7f5;
-    --bg3: #f0efe9;
+    --bg-mesh: #f9fafb;
+    --leaf-green: #0F6E56;
+    --leaf-light: #E1F5EE;
+    --forest-dark: #062d23;
     --text: #1a1a1a;
-    --text2: #6b6b6b;
-    --text3: #a0a09a;
-    --border: rgba(0,0,0,0.1);
-    --border2: rgba(0,0,0,0.18);
-    --purple: #534AB7;
-    --purple-light: #EEEDFE;
-    --purple-dark: #3C3489;
-    --green: #0F6E56;
-    --green-light: #E1F5EE;
-    --red-light: #FCEBEB;
-    --red: #A32D2D;
-    --radius: 8px;
-    --radius-lg: 12px;
-    --mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
-    --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    --text-soft: #4a4a4a;
+    --text-muted: #8c8c8c;
+    --border: rgba(15, 110, 86, 0.1);
+    --border-strong: rgba(15, 110, 86, 0.2);
+    --radius: 12px;
+    --radius-lg: 24px;
+    --mono: 'JetBrains Mono', 'Fira Code', monospace;
+    --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+
+    /* Android Studio Light Theme Palette */
+    --as-bg: #ffffff;
+    --as-keyword: #0033b3;
+    --as-function: #00627a;
+    --as-string: #067d17;
+    --as-number: #1750eb;
+    --as-comment: #8c8c8c;
+    --as-annotation: #9e880d;
+    --as-param: #248f8f;
   }
 
   @media (prefers-color-scheme: dark) {
     :root {
-      --bg: #1a1a1a;
-      --bg2: #222222;
-      --bg3: #2a2a2a;
-      --text: #f0efe9;
-      --text2: #a0a09a;
-      --text3: #6b6b6b;
-      --border: rgba(255,255,255,0.1);
-      --border2: rgba(255,255,255,0.18);
-      --purple: #7F77DD;
-      --purple-light: #26215C;
-      --purple-dark: #AFA9EC;
-      --green: #5DCAA5;
-      --green-light: #04342C;
-      --red-light: #501313;
-      --red: #F09595;
+      --bg: #06120e;
+      --bg-mesh: #0a1a15;
+      --leaf-green: #5DCAA5;
+      --leaf-light: #0d2b23;
+      --forest-dark: #ecfdf5;
+      --text: #f0fdf4;
+      --text-soft: #a7f3d0;
+      --text-muted: #5b8a78;
+      --border: rgba(93, 202, 165, 0.15);
+      --border-strong: rgba(93, 202, 165, 0.3);
     }
   }
 
@@ -56,759 +56,544 @@
     background: var(--bg);
     color: var(--text);
     line-height: 1.6;
-    min-height: 100vh;
+    overflow-x: hidden;
   }
 
-  /* NAV */
+  /* REFINED LEAF BACKGROUND */
+  .leaf-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0.3;
+  }
+
   nav {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 1rem 2rem;
-    border-bottom: 0.5px solid var(--border);
+    padding: 1.2rem 2.5rem;
     position: sticky;
     top: 0;
-    background: var(--bg);
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
     z-index: 100;
   }
 
+  @media (prefers-color-scheme: dark) {
+    nav { background: rgba(6, 18, 14, 0.85); }
+  }
+
   .nav-logo {
-    font-size: 15px;
-    font-weight: 500;
-    color: var(--text);
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--leaf-green);
     text-decoration: none;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
   }
 
-  .nav-logo-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--purple);
+  .logo-icon {
+    width: 32px;
+    height: 32px;
+    fill: currentColor;
   }
 
   .nav-links {
     display: flex;
     align-items: center;
-    gap: 1.5rem;
+    gap: 2.5rem;
     list-style: none;
   }
 
   .nav-links a {
-    font-size: 14px;
-    color: var(--text2);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-soft);
     text-decoration: none;
-    transition: color .15s;
+    letter-spacing: 0.5px;
+    transition: color 0.2s;
   }
 
-  .nav-links a:hover { color: var(--text); }
+  .nav-links a:hover { color: var(--leaf-green); }
 
   .nav-btn {
-    padding: 7px 18px;
-    border-radius: var(--radius);
-    background: var(--purple);
-    color: #fff;
+    padding: 10px 22px;
+    border-radius: 100px;
+    background: var(--leaf-green);
+    color: #fff !important;
     font-size: 13px;
-    font-weight: 500;
-    border: none;
-    cursor: pointer;
-    text-decoration: none;
-    transition: opacity .15s;
+    font-weight: 700;
   }
 
-  .nav-btn:hover { opacity: .88; }
-
-  /* HERO */
   .hero {
-    padding: 5rem 2rem 4rem;
+    padding: 9rem 2rem 6rem;
     text-align: center;
-    max-width: 900px;
+    max-width: 1100px;
     margin: 0 auto;
   }
 
-  .pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    font-size: 12px;
-    font-weight: 500;
-    padding: 5px 14px;
-    border-radius: 20px;
-    border: 0.5px solid var(--border2);
-    color: var(--text2);
+  .hero-tag {
+    display: inline-block;
+    background: var(--leaf-light);
+    color: var(--leaf-green);
+    padding: 6px 16px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
     margin-bottom: 2rem;
   }
 
-  .pill-dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: var(--purple);
-    flex-shrink: 0;
-  }
-
   .hero h1 {
-    font-size: clamp(36px, 7vw, 68px);
-    font-weight: 500;
-    line-height: 1.08;
-    letter-spacing: -1.5px;
+    font-size: clamp(54px, 10vw, 108px);
+    font-weight: 300;
+    line-height: 0.92;
+    letter-spacing: -5px;
+    margin-bottom: 2.5rem;
     color: var(--text);
-    margin-bottom: 1.5rem;
   }
 
   .hero h1 em {
     font-style: normal;
-    color: var(--purple);
+    color: var(--leaf-green);
+    font-weight: 500;
+    display: block;
   }
 
   .hero-sub {
-    font-size: 17px;
-    color: var(--text2);
-    max-width: 500px;
-    margin: 0 auto 2.5rem;
-    line-height: 1.75;
+    font-size: 22px;
+    color: var(--text-soft);
+    max-width: 680px;
+    margin: 0 auto 3.5rem;
+    font-weight: 400;
+    line-height: 1.5;
   }
 
-  .btn-row {
+  .btn-group {
     display: flex;
-    gap: 10px;
+    gap: 16px;
     justify-content: center;
-    flex-wrap: wrap;
-    margin-bottom: 3.5rem;
+    margin-bottom: 6rem;
   }
 
-  .btn-primary {
-    padding: 12px 28px;
-    border-radius: var(--radius);
-    background: var(--purple);
+  .btn-main {
+    padding: 18px 42px;
+    border-radius: 100px;
+    background: var(--leaf-green);
     color: #fff;
-    font-size: 15px;
-    font-weight: 500;
+    font-size: 16px;
+    font-weight: 700;
     border: none;
     cursor: pointer;
-    transition: opacity .15s;
+    box-shadow: 0 10px 30px rgba(15, 110, 86, 0.15);
   }
 
-  .btn-primary:hover { opacity: .88; }
-
-  .btn-secondary {
-    padding: 12px 28px;
-    border-radius: var(--radius);
+  .btn-outline {
+    padding: 18px 42px;
+    border-radius: 100px;
     background: transparent;
     color: var(--text);
-    font-size: 15px;
-    font-weight: 500;
-    border: 0.5px solid var(--border2);
+    font-size: 16px;
+    font-weight: 700;
+    border: 1px solid var(--border-strong);
     cursor: pointer;
-    transition: background .15s;
   }
 
-  .btn-secondary:hover { background: var(--bg2); }
-
-  /* STATS */
-  .stats {
-    display: flex;
-    gap: 3rem;
-    justify-content: center;
-    flex-wrap: wrap;
-    margin-bottom: 4rem;
-    padding-bottom: 4rem;
-    border-bottom: 0.5px solid var(--border);
-  }
-
-  .stat-val {
-    font-size: 32px;
-    font-weight: 500;
-    color: var(--text);
-    line-height: 1;
-  }
-
-  .stat-lbl {
-    font-size: 13px;
-    color: var(--text3);
-    margin-top: 4px;
-  }
-
-  /* CODE SAMPLE SECTION */
-  .sample-section {
-    max-width: 860px;
+  .showcase {
+    padding: 4rem 2rem 8rem;
+    max-width: 1200px;
     margin: 0 auto;
-    padding: 0 2rem 5rem;
   }
 
-  .section-label {
-    font-size: 11px;
-    font-weight: 500;
-    letter-spacing: .09em;
-    text-transform: uppercase;
-    color: var(--text3);
+  .showcase-header {
     text-align: center;
-    margin-bottom: 1.25rem;
+    margin-bottom: 4.5rem;
   }
 
-  .code-split {
+  .showcase-header h2 {
+    font-size: 36px;
+    font-weight: 400;
+    letter-spacing: -1.5px;
+  }
+
+  .code-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 14px;
+    gap: 2.5rem;
   }
 
-  @media (max-width: 600px) {
-    .code-split { grid-template-columns: 1fr; }
-    nav .nav-links { display: none; }
+  @media (max-width: 900px) {
+    .code-grid { grid-template-columns: 1fr; }
   }
 
-  .code-card {
-    background: var(--bg2);
-    border: 0.5px solid var(--border);
-    border-radius: var(--radius-lg);
+  .window {
+    background: var(--as-bg);
+    border: 1px solid #dcdcdc;
+    border-radius: 10px;
     overflow: hidden;
+    box-shadow: 0 15px 45px rgba(0,0,0,0.06);
+    position: relative;
   }
 
-  .code-card.featured {
-    border-color: var(--purple);
-    border-width: 1px;
-  }
-
-  .code-head {
+  .window-top {
+    padding: 10px 18px;
+    background: #f8f8f8;
+    border-bottom: 1px solid #dcdcdc;
     display: flex;
-    align-items: center;
     justify-content: space-between;
-    padding: 10px 16px;
-    border-bottom: 0.5px solid var(--border);
+    align-items: center;
   }
 
-  .code-head.featured { border-bottom-color: var(--purple); }
+  .window-dots {
+    display: flex;
+    gap: 6px;
+  }
 
-  .code-title {
+  .dot { width: 11px; height: 11px; border-radius: 50%; background: #e0e0e0; border: 1px solid #d0d0d0; }
+
+  .window-label {
     font-size: 11px;
-    font-weight: 500;
-    letter-spacing: .07em;
-    text-transform: uppercase;
-    color: var(--text3);
+    font-weight: 700;
+    color: #888;
+    font-family: var(--sans);
+    letter-spacing: 0.5px;
   }
-
-  .code-title.featured { color: var(--purple); }
 
   .token-badge {
-    font-size: 11px;
-    font-weight: 500;
-    padding: 3px 9px;
-    border-radius: 10px;
-  }
-
-  .badge-bad { background: var(--red-light); color: var(--red); }
-  .badge-good { background: var(--green-light); color: var(--green); }
-
-  .code-body {
-    padding: 16px;
+    position: absolute;
+    top: 52px;
+    right: 20px;
+    background: #f1f1f1;
+    border: 1px solid #e1e1e1;
+    padding: 5px 12px;
+    border-radius: 8px;
     font-family: var(--mono);
-    font-size: 13px;
-    line-height: 1.8;
-    color: var(--text);
-    white-space: pre;
-    overflow-x: auto;
-  }
-
-  .kw { color: var(--purple); }
-  .fn { color: #1D9E75; }
-  .str { color: #BA7517; }
-  .dp { color: #D85A30; }
-  .cmt { color: var(--text3); }
-
-  /* DIVIDER WITH LABEL */
-  .divider-label {
+    font-size: 11px;
+    color: #555;
     display: flex;
     align-items: center;
-    gap: 14px;
-    margin: 1.5rem 0;
+    gap: 8px;
+    z-index: 10;
   }
 
-  .divider-line {
-    flex: 1;
-    height: 0.5px;
-    background: var(--border2);
+  .token-badge.premium {
+    background: var(--leaf-light);
+    border-color: rgba(15, 110, 86, 0.3);
+    color: var(--leaf-green);
+    font-weight: 800;
   }
 
-  .divider-text {
-    font-size: 12px;
-    color: var(--text3);
-    white-space: nowrap;
+  .code-block {
+    padding: 32px 24px 24px;
+    font-family: var(--mono);
+    font-size: 13.5px;
+    line-height: 1.7;
+    overflow-x: auto;
+    color: #000;
+    white-space: pre;
   }
 
-  /* HOW IT WORKS */
-  .how-section {
-    background: var(--bg2);
-    border-top: 0.5px solid var(--border);
-    border-bottom: 0.5px solid var(--border);
-    padding: 4rem 2rem;
-    text-align: center;
-  }
+  /* SYNTAX HIGHLIGHTING - AS LIGHT */
+  .s-kw { color: var(--as-keyword); font-weight: 600; }
+  .s-fn { color: var(--as-function); }
+  .s-str { color: var(--as-string); }
+  .s-num { color: var(--as-number); }
+  .s-cmt { color: var(--as-comment); font-style: italic; }
+  .s-ann { color: var(--as-annotation); }
+  .s-p { color: var(--as-param); }
 
-  .how-section h2 {
-    font-size: clamp(22px, 4vw, 36px);
-    font-weight: 500;
-    margin-bottom: .75rem;
-    letter-spacing: -.5px;
-  }
-
-  .how-sub {
-    font-size: 15px;
-    color: var(--text2);
-    margin-bottom: 3rem;
-  }
-
-  .steps {
+  .features {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 14px;
-    max-width: 860px;
-    margin: 0 auto;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2.5rem;
+    padding: 6rem 2rem;
+    background: var(--bg-mesh);
+    border-top: 1px solid var(--border);
   }
 
-  .step-card {
+  @media (max-width: 800px) {
+    .features { grid-template-columns: 1fr; }
+  }
+
+  .feat-card {
+    padding: 3rem;
+    border-radius: var(--radius-lg);
     background: var(--bg);
-    border: 0.5px solid var(--border);
-    border-radius: var(--radius-lg);
-    padding: 1.25rem;
-    text-align: left;
+    border: 1px solid var(--border);
+    transition: transform 0.3s ease;
   }
+  
+  .feat-card:hover { transform: translateY(-5px); }
 
-  .step-num {
-    font-size: 11px;
-    font-weight: 500;
-    color: var(--purple);
-    letter-spacing: .06em;
-    margin-bottom: 10px;
-  }
-
-  .step-title {
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--text);
-    margin-bottom: 6px;
-  }
-
-  .step-desc {
-    font-size: 13px;
-    color: var(--text2);
-    line-height: 1.6;
-  }
-
-  /* INSTALL SECTION */
-  .install-section {
-    max-width: 600px;
-    margin: 0 auto;
-    padding: 5rem 2rem;
-    text-align: center;
-  }
-
-  .install-section h2 {
-    font-size: clamp(22px, 4vw, 36px);
-    font-weight: 500;
-    margin-bottom: .75rem;
-    letter-spacing: -.5px;
-  }
-
-  .install-sub {
-    font-size: 15px;
-    color: var(--text2);
-    margin-bottom: 2rem;
-  }
-
-  .install-block {
-    background: var(--bg2);
-    border: 0.5px solid var(--border);
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-    text-align: left;
-    margin-bottom: 1rem;
-  }
-
-  .install-head {
-    padding: 8px 14px;
-    border-bottom: 0.5px solid var(--border);
-    font-size: 11px;
-    color: var(--text3);
-    font-weight: 500;
-    letter-spacing: .06em;
-    text-transform: uppercase;
+  .feat-icon {
+    width: 54px;
+    height: 54px;
+    background: var(--leaf-light);
+    border-radius: 14px;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center;
+    color: var(--leaf-green);
+    margin-bottom: 1.8rem;
   }
 
-  .copy-btn {
-    font-size: 11px;
-    padding: 2px 8px;
-    border-radius: 6px;
-    border: 0.5px solid var(--border2);
-    background: transparent;
-    color: var(--text2);
-    cursor: pointer;
-    transition: background .15s;
-  }
-
-  .copy-btn:hover { background: var(--bg3); }
-
-  .install-code {
-    padding: 14px 16px;
-    font-family: var(--mono);
-    font-size: 13px;
-    color: var(--text);
-    line-height: 1.75;
-    white-space: pre;
-    overflow-x: auto;
-  }
-
-  /* FOOTER */
-  footer {
-    border-top: 0.5px solid var(--border);
-    padding: 2rem;
+  .waitlist {
+    margin: 8rem 2rem;
+    padding: 6rem 2rem;
+    background: var(--forest-dark);
+    color: white;
+    border-radius: var(--radius-lg);
     text-align: center;
+    background-image: radial-gradient(circle at top right, rgba(15, 110, 86, 0.2), transparent);
   }
 
-  .footer-logo {
-    font-size: 15px;
-    font-weight: 500;
-    color: var(--text);
-    margin-bottom: .5rem;
-  }
-
-  .footer-tagline {
-    font-size: 13px;
-    color: var(--text3);
+  .waitlist h2 {
+    font-size: 48px;
+    font-weight: 300;
+    letter-spacing: -2px;
     margin-bottom: 1.5rem;
   }
 
-  .footer-links {
+  .input-wrap {
     display: flex;
-    gap: 1.5rem;
-    justify-content: center;
-    list-style: none;
-    margin-bottom: 2rem;
-  }
-
-  .footer-links a {
-    font-size: 13px;
-    color: var(--text2);
-    text-decoration: none;
-  }
-
-  .footer-links a:hover { color: var(--text); }
-
-  .footer-copy {
-    font-size: 12px;
-    color: var(--text3);
-  }
-
-  /* WAITLIST */
-  .waitlist-section {
-    background: var(--purple-light);
-    border-top: 0.5px solid var(--border);
-    padding: 4rem 2rem;
-    text-align: center;
-  }
-
-  .waitlist-section h2 {
-    font-size: clamp(22px, 4vw, 36px);
-    font-weight: 500;
-    color: var(--purple-dark);
-    margin-bottom: .75rem;
-    letter-spacing: -.5px;
-  }
-
-  .waitlist-sub {
-    font-size: 15px;
-    color: var(--purple);
-    margin-bottom: 2rem;
-    opacity: .85;
-  }
-
-  .waitlist-form {
-    display: flex;
-    gap: 8px;
-    max-width: 400px;
+    max-width: 520px;
     margin: 0 auto;
-    flex-wrap: wrap;
-    justify-content: center;
+    background: rgba(255,255,255,0.08);
+    padding: 8px;
+    border-radius: 100px;
+    border: 1px solid rgba(255,255,255,0.15);
+    backdrop-filter: blur(10px);
   }
 
-  .waitlist-input {
+  .input-wrap input {
     flex: 1;
-    min-width: 200px;
-    height: 42px;
-    border-radius: var(--radius);
-    border: 0.5px solid var(--border2);
-    padding: 0 14px;
-    font-size: 14px;
-    font-family: var(--sans);
-    background: var(--bg);
-    color: var(--text);
+    background: transparent;
+    border: none;
+    padding: 0 28px;
+    color: white;
+    font-size: 16px;
     outline: none;
   }
 
-  .waitlist-input:focus { border-color: var(--purple); }
-
-  .waitlist-btn {
-    height: 42px;
-    padding: 0 22px;
-    border-radius: var(--radius);
-    background: var(--purple);
-    color: #fff;
-    font-size: 14px;
-    font-weight: 500;
+  .input-wrap button {
+    background: white;
+    color: var(--forest-dark);
     border: none;
+    padding: 14px 36px;
+    border-radius: 100px;
+    font-weight: 800;
+    font-size: 15px;
     cursor: pointer;
-    transition: opacity .15s;
-    white-space: nowrap;
+    transition: opacity 0.2s;
   }
 
-  .waitlist-btn:hover { opacity: .88; }
+  .input-wrap button:hover { opacity: 0.9; }
 
-  .waitlist-note {
-    font-size: 12px;
-    color: var(--purple);
-    margin-top: 10px;
-    opacity: .7;
+  footer {
+    padding: 6rem 2rem;
+    text-align: center;
+    border-top: 1px solid var(--border);
+  }
+
+  .footer-logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 900;
+    color: var(--leaf-green);
+    letter-spacing: 3px;
+    margin-bottom: 2.5rem;
+  }
+
+  /* ACACIA LEAF PATTERN */
+  .leaf-pattern {
+    position: absolute;
+    width: 280px;
+    height: 280px;
+    fill: var(--leaf-green);
+    opacity: 0.06;
   }
 </style>
 </head>
 <body>
 
-<!-- NAV -->
+<!-- CUSTOM ACACIA LEAF LOGO DEFINITION -->
+<svg style="display: none;">
+  <symbol id="acacia-leaf" viewBox="0 0 100 100">
+    <!-- Central stem -->
+    <path d="M50 95 Q50 50 50 5" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"/>
+    <!-- Leaflets -->
+    <path d="M50 20 L65 15 Q70 15 65 25 L50 30" />
+    <path d="M50 20 L35 15 Q30 15 35 25 L50 30" />
+    <path d="M50 35 L68 30 Q75 30 68 42 L50 48" />
+    <path d="M50 35 L32 30 Q25 30 32 42 L50 48" />
+    <path d="M50 50 L72 45 Q80 45 72 58 L50 65" />
+    <path d="M50 50 L28 45 Q20 45 28 58 L50 65" />
+    <path d="M50 65 L70 62 Q78 62 70 73 L50 80" />
+    <path d="M50 65 L30 62 Q22 62 30 73 L50 80" />
+    <path d="M50 80 L62 78 Q68 78 62 86 L50 90" />
+    <path d="M50 80 L38 78 Q32 78 38 86 L50 90" />
+  </symbol>
+</svg>
+
+<div class="leaf-bg">
+  <svg class="leaf-pattern" style="top: 5%; left: -100px; transform: rotate(35deg);">
+    <use href="#acacia-leaf"/>
+  </svg>
+  <svg class="leaf-pattern" style="bottom: 10%; right: -100px; transform: rotate(-145deg);">
+    <use href="#acacia-leaf"/>
+  </svg>
+</div>
+
 <nav>
   <a class="nav-logo" href="#">
-    <span class="nav-logo-dot"></span>
-    Acacia
+    <svg class="logo-icon"><use href="#acacia-leaf"/></svg>
+    ACACIA
   </a>
   <ul class="nav-links">
-    <li><a href="#how">How it works</a></li>
-    <li><a href="#install">Install</a></li>
-    <li><a href="https://github.com" target="_blank">GitHub</a></li>
-    <li><a class="nav-btn" href="#waitlist">Get early access</a></li>
+    <li><a href="#showcase">Showcase</a></li>
+    <li><a href="#stack">Tech Stack</a></li>
+    <li><a class="nav-btn" href="#waitlist">Early Access</a></li>
   </ul>
 </nav>
 
-<!-- HERO -->
 <section class="hero">
-  <div class="pill">
-    <span class="pill-dot"></span>
-    KSP · Gradle Plugin · Kotlin Language · Zero runtime cost
-  </div>
-
-  <h1>Acacia.<br><em>Kotlin language.</em><br>Maximum efficiency.</h1>
-
+  <span class="hero-tag">Vibe-First Compose</span>
+  <h1>Compose UIs that<br><em>Grow effortlessly.</em></h1>
   <p class="hero-sub">
-    Acacia represents the perfect tree structure with the smallest leaves for the entire Kotlin language. Our project focuses on efficiency and minimalism across all Kotlin development. Maximum output with minimal overhead.
+    The ultimate utility tree for Jetpack Compose. Acacia prunes the Modifier noise, leaving only the logic your VibeCoder heart desires.
   </p>
-
-  <div class="btn-row">
-    <button class="btn-primary" onclick="document.getElementById('waitlist').scrollIntoView({behavior:'smooth'})">Get early access →</button>
-    <button class="btn-secondary" onclick="window.open('https://github.com','_blank')">View on GitHub</button>
-  </div>
-
-  <div class="stats">
-    <div>
-      <div class="stat-val">75%</div>
-      <div class="stat-lbl">fewer AI tokens</div>
-    </div>
-    <div>
-      <div class="stat-val">0ms</div>
-      <div class="stat-lbl">runtime cost</div>
-    </div>
-    <div>
-      <div class="stat-val">1 line</div>
-      <div class="stat-lbl">to install</div>
-    </div>
-    <div>
-      <div class="stat-val">100%</div>
-      <div class="stat-lbl">Kotlin native</div>
-    </div>
+  <div class="btn-group">
+    <button class="btn-main">Get Early Access</button>
+    <button class="btn-outline">Read Manifesto</button>
   </div>
 </section>
 
-<!-- CODE SAMPLE -->
-<section class="sample-section">
-  <div class="section-label">Same functionality. Different efficiency.</div>
+<section class="showcase" id="showcase">
+  <div class="showcase-header">
+    <h2>Verbose Corporate vs. <em>Acacia Vibe</em></h2>
+  </div>
 
-  <div class="code-split">
-    <div class="code-card">
-      <div class="code-head">
-        <span class="code-title">Vanilla Kotlin</span>
-        <span class="token-badge badge-bad">~38 tokens</span>
+  <div class="code-grid">
+    <!-- Corporate Column -->
+    <div class="window">
+      <div class="window-top">
+        <div class="window-dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+        <span class="window-label">StandardProfile.kt</span>
       </div>
-      <div class="code-body"><span class="fn">StringBuilder</span>()
-    .<span class="fn">append</span>(<span class="str">"Hello"</span>)
-    .<span class="fn">append</span>(<span class="str">" "</span>)
-    .<span class="fn">append</span>(name)
-    .<span class="fn">toString</span>()
-    .<span class="fn">let</span> { result ->
-        <span class="fn">println</span>(result)
-    }</div>
-    </div>
-
-    <div class="code-card featured">
-      <div class="code-head featured">
-        <span class="code-title featured">Acacia</span>
-        <span class="token-badge badge-good">~8 tokens</span>
+      <div class="token-badge">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/></svg>
+        <span>142 Tokens</span>
       </div>
-      <div class="code-body"><span class="fn">StringBuilder</span>()
-    .<span class="fn">+ </span><span class="str">"Hello"</span>
-    .<span class="fn">+ </span><span class="str">" "</span>
-    .<span class="fn">+ </span>name
-    .<span class="fn">print</span>()</div>
-    </div>
-  </div>
-
-  <div class="divider-label">
-    <div class="divider-line"></div>
-    <span class="divider-text">KSP expands to identical bytecode at build time</span>
-    <div class="divider-line"></div>
-  </div>
-
-  <div class="code-split" style="margin-top:0">
-    <div class="code-card">
-      <div class="code-head">
-        <span class="code-title">Data processing</span>
-        <span class="token-badge badge-bad">~28 tokens</span>
-      </div>
-      <div class="code-body"><span class="fn">listOf</span>(1, 2, 3, 4, 5)
-    .<span class="fn">filter</span> { it % 2 == 0 }
-    .<span class="fn">map</span> { it * 2 }
-    .<span class="fn">reduce</span> { acc, num -> acc + num }
-    .<span class="fn">let</span> { result ->
-        <span class="fn">println</span>(result)
-    }</div>
-    </div>
-
-    <div class="code-card featured">
-      <div class="code-head featured">
-        <span class="code-title featured">Acacia</span>
-        <span class="token-badge badge-good">~9 tokens</span>
-      </div>
-      <div class="code-body"><span class="fn">listOf</span>(1, 2, 3, 4, 5)
-    .<span class="fn">filterEven</span>()
-    .<span class="fn">map2x</span>()
-    .<span class="fn">sum</span>()
-    .<span class="fn">print</span>()</div>
-    </div>
-  </div>
-</section>
-
-<!-- HOW IT WORKS -->
-<section class="how-section" id="how">
-  <h2>How it works</h2>
-  <p class="how-sub">Three steps. One plugin. No config files.</p>
-
-  <div class="steps">
-    <div class="step-card">
-      <div class="step-num">01 — Install</div>
-      <div class="step-title">Add one plugin line</div>
-      <div class="step-desc">Apply the Acacia framework to your project. That is all the setup you need.</div>
-    </div>
-    <div class="step-card">
-      <div class="step-num">02 — Scan</div>
-      <div class="step-title">KSP reads your classpath</div>
-      <div class="step-desc">KSP analyzes your entire Kotlin codebase — from standard library functions, third-party libraries, and your own custom code.</div>
-    </div>
-    <div class="step-card">
-      <div class="step-num">03 — Generate</div>
-      <div class="step-title">Wrappers appear automatically</div>
-      <div class="step-desc">Acacia generates compact Kotlin extensions and utilities automatically. Real code, full IDE support for the entire language.</div>
-    </div>
-    <div class="step-card">
-      <div class="step-num">04 — Write less</div>
-      <div class="step-title">AI generates in fewer tokens</div>
-      <div class="step-desc">Use the concise API yourself or let AI generate it. Both approaches compile to identical bytecode with zero runtime cost across all Kotlin development.</div>
-    </div>
-  </div>
-</section>
-
-<!-- INSTALL -->
-<section class="install-section" id="install">
-  <h2>One line to install</h2>
-  <p class="install-sub">Add the plugin, run a build. Everything else is automatic.</p>
-
-  <div class="install-block">
-    <div class="install-head">
-      build.gradle.kts
-      <button class="copy-btn" onclick="copyCode(this, 'code1')">Copy</button>
-    </div>
-    <div class="install-code" id="code1">plugins {
-    id("<span class="str">io.acacia</span>") version "<span class="str">1.0.0</span>"
-}</div>
-  </div>
-
-  <div class="install-block">
-    <div class="install-head">
-      Then just use it
-      <button class="copy-btn" onclick="copyCode(this, 'code2')">Copy</button>
-    </div>
-    <div class="install-code" id="code2"><span class="cmt">// Before</span>
-<span class="fn">listOf</span>(1, 2, 3).<span class="fn">filter</span> { it > 1 }.<span class="fn">map</span> { it * 2 }
-
-<span class="cmt">// After — Acacia</span>
-<span class="fn">listOf</span>(1, 2, 3).<span class="fn">filterGt1</span>().<span class="fn">map2x</span>()</div>
-  </div>
-</section>
-
-<!-- WAITLIST -->
-<section class="waitlist-section" id="waitlist">
-  <h2>Get early access</h2>
-  <p class="waitlist-sub">Acacia is in active development. Join the waitlist and be first.</p>
-
-  <div class="waitlist-form">
-    <input class="waitlist-input" id="email-input" type="email" placeholder="you@company.com" />
-    <button class="waitlist-btn" onclick="joinWaitlist()">Join waitlist</button>
-  </div>
-  <div class="waitlist-note" id="waitlist-msg">No spam. Just a ping when it ships.</div>
-</section>
-
-<!-- FOOTER -->
-<footer>
-  <div class="footer-logo">Acacia</div>
-  <div class="footer-tagline">Efficient tree structure with smallest leaves.</div>
-  <ul class="footer-links">
-    <li><a href="#">Docs</a></li>
-    <li><a href="#">GitHub</a></li>
-    <li><a href="#">Changelog</a></li>
-    <li><a href="#">Twitter / X</a></li>
-  </ul>
-  <div class="footer-copy">Built with KSP + Gradle Plugin · Open source · MIT license</div>
-</footer>
-
-<script>
-  function copyCode(btn, id) {
-    var el = document.getElementById(id);
-    var text = el.innerText;
-    navigator.clipboard.writeText(text).then(function() {
-      btn.textContent = 'Copied!';
-      setTimeout(function() { btn.textContent = 'Copy'; }, 1800);
-    });
-  }
-
-  function joinWaitlist() {
-    var email = document.getElementById('email-input').value.trim();
-    var msg = document.getElementById('waitlist-msg');
-    if (!email || !email.includes('@')) {
-      msg.style.color = '#A32D2D';
-      msg.textContent = 'Please enter a valid email address.';
-      return;
+      <div class="code-block">
+<span class="s-ann">@Composable</span>
+<span class="s-kw">fun</span> <span class="s-fn">ProfileCard</span>(<span class="s-p">user</span>: User) {
+    <span class="s-fn">Column</span>(
+        modifier = Modifier
+            .<span class="s-fn">fillMaxWidth</span>()
+            .<span class="s-fn">padding</span>(<span class="s-num">16</span>.<span class="s-fn">dp</span>)
+            .<span class="s-fn">background</span>(MaterialTheme.colorScheme.surface)
+            .<span class="s-fn">clip</span>(<span class="s-fn">RoundedCornerShape</span>(<span class="s-num">12</span>.<span class="s-fn">dp</span>)),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        <span class="s-fn">Text</span>(
+            text = user.name,
+            style = MaterialTheme.typography.titleLarge
+        )
+        <span class="s-fn">Spacer</span>(Modifier.<span class="s-fn">height</span>(<span class="s-num">8</span>.<span class="s-fn">dp</span>))
+        <span class="s-fn">Button</span>(onClick = { <span class="s-cmt">/* auth */</span> }) {
+            <span class="s-fn">Text</span>(<span class="s-str">"Connect"</span>)
+        }
     }
-    
-    // Open mail client with prefilled subject and body
-    var subject = encodeURIComponent('Interest in Acacia - Kotlin Language Efficiency Tool');
-    var body = encodeURIComponent('Hi,\n\nI\'m interested in learning more about Acacia and would like to join the waitlist for early access.\n\nMy email: ' + email + '\n\nLooking forward to hearing from you!\n\nBest regards');
-    var mailtoLink = 'mailto:raju348636@gmail.com?subject=' + subject + '&body=' + body;
-    window.location.href = mailtoLink;
-    
-    msg.style.color = '#0F6E56';
-    msg.textContent = "Opening your mail client...";
-    document.getElementById('email-input').value = '';
-  }
-</script>
+}</div>
+    </div>
+
+    <!-- Acacia Column -->
+    <div class="window" style="border-color: var(--leaf-green); border-width: 1.5px;">
+      <div class="window-top" style="background: #f4fcf8;">
+        <div class="window-dots"><div class="dot" style="background:var(--leaf-green); border-color: transparent;"></div><div class="dot" style="background:var(--leaf-green); border-color: transparent;"></div><div class="dot" style="background:var(--leaf-green); border-color: transparent;"></div></div>
+        <span class="window-label" style="color:var(--leaf-green)">AcaciaProfile.kt</span>
+      </div>
+      <div class="token-badge premium">
+        <svg width="12" height="12"><use href="#acacia-leaf"/></svg>
+        <span>68 Tokens</span>
+      </div>
+      <div class="code-block">
+<span class="s-ann">@Composable</span>
+<span class="s-kw">fun</span> <span class="s-fn">ProfileCard</span>(<span class="s-p">user</span>: User) {
+    <span class="s-fn">VibeColumn</span>(
+        p = <span class="s-num">16</span>, 
+        bg = Surface, 
+        r = <span class="s-num">12</span>,
+        align = Center
+    ) {
+        <span class="s-fn">Title</span>(user.name)
+        
+        <span class="s-fn">Gap</span>(<span class="s-num">8</span>)
+        
+        <span class="s-fn">LeafButton</span>(<span class="s-str">"Connect"</span>) {
+            <span class="s-cmt">// Vibe check passed</span>
+        }
+    }
+}</div>
+    </div>
+  </div>
+</section>
+
+<section class="features" id="stack">
+  <div class="feat-card">
+    <div class="feat-icon">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+    </div>
+    <h3>Layered Safety</h3>
+    <p>Corporate stability meets the "Vibe" layer. Pure Kotlin under the hood with 0% runtime overhead.</p>
+  </div>
+  <div class="feat-card">
+    <div class="feat-icon">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+    </div>
+    <h3>LLM Native</h3>
+    <p>Optimized for AI prompt engineering. Shorter code means better context retention and zero hallucinations.</p>
+  </div>
+  <div class="feat-card">
+    <div class="feat-icon">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8l4 4-4 4M8 12h7"/></svg>
+    </div>
+    <h3>Vibe-Compiled</h3>
+    <p>KSP2 processors automatically generate the boilerplate you used to write by hand. Ship faster.</p>
+  </div>
+</section>
+
+<section class="waitlist" id="waitlist">
+  <h2>Enter the Forest.</h2>
+  <p style="color: rgba(255,255,255,0.6); margin-bottom: 2.5rem;">The waitlist is growing. Join the top 1% of Compose Engineers.</p>
+  <div class="input-wrap">
+    <input type="email" placeholder="vibe.coder@company.com">
+    <button>Get Access</button>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-logo">
+    <svg class="logo-icon" style="width: 24px; height: 24px;"><use href="#acacia-leaf"/></svg>
+    ACACIA
+  </div>
+  <div style="font-size: 13px; color: var(--text-muted); max-width: 400px; margin: 0 auto 2.5rem;">
+    The framework that treats your UI like a living organism. Beautiful, efficient, and resilient.
+  </div>
+  <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">
+    &copy; 2024 Acacia UI. All rights reserved.
+  </div>
+</footer>
 
 </body>
 </html>
