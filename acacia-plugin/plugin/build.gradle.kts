@@ -48,10 +48,8 @@ java {
 }
 
 signing {
-    useInMemoryPgpKeys(
-        providers.gradleProperty("signingKey").orNull,
-        providers.gradleProperty("signingPassword").orNull
-    )
+    useGpgCmd()
+    sign(publishing.publications)
 }
 
 /*
