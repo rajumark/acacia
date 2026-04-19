@@ -70,14 +70,14 @@ fun DashboardUIAcaciaCompose() {
 fun AcaciaHeaderSection() {
     Card(
         modifier = Modifier
-            .fmw()
+            .mw()
             .shadow(elevation = 8.dp, shape = RoundedCornerShape(12.dp)),
         colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {
         Row(
             modifier = Modifier
-                .fmw()
-                .p(16.dp),
+                .mw()
+                .padg(16.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -99,7 +99,7 @@ fun AcaciaHeaderSection() {
                 modifier = Modifier
                     .size(48.dp)
                     .clip(CircleShape)
-                    .bg(Color(0xFF3498DB))
+                    .brd(Color(0xFF3498DB))
                     .clickable { /* Profile click */ },
                 contentAlignment = Alignment.Center
             ) {
@@ -120,7 +120,7 @@ fun AcaciaOverviewTab() {
         columns = GridCells.Fixed(2),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
-        modifier = Modifier.fmw().fmh()
+        modifier = Modifier.mw().fmh()
     ) {
         item {
             AcaciaStatCard(
@@ -162,14 +162,14 @@ fun AcaciaOverviewTab() {
         item {
             Card(
                 modifier = Modifier
-                    .fmw()
+                    .mw()
                     .height(200.dp),
                 colors = CardDefaults.cardColors(containerColor = Color.White)
             ) {
                 Column(
                     modifier = Modifier
-                        .fmw().fmh()
-                        .p(16.dp)
+                        .mw().fmh()
+                        .padg(16.dp)
                 ) {
                     Text(
                         text = "Recent Activity",
@@ -188,14 +188,14 @@ fun AcaciaOverviewTab() {
                                 fontSize = 14.sp,
                                 color = Color(0xFF7F8C8D),
                                 modifier = Modifier
-                                    .fmw()
+                                    .mw()
                                     .padding(vertical = 4.dp)
                                     .border(
                                         width = 1.dp,
                                         color = Color(0xFFECF0F1),
                                         shape = RoundedCornerShape(4.dp)
                                     )
-                                    .p(8.dp)
+                                    .padg(8.dp)
                             )
                         }
                     }
@@ -206,14 +206,14 @@ fun AcaciaOverviewTab() {
         item {
             Card(
                 modifier = Modifier
-                    .fmw()
+                    .mw()
                     .height(200.dp),
                 colors = CardDefaults.cardColors(containerColor = Color.White)
             ) {
                 Column(
                     modifier = Modifier
-                        .fmw().fmh()
-                        .p(16.dp),
+                        .mw().fmh()
+                        .padg(16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
@@ -239,19 +239,19 @@ fun AcaciaOverviewTab() {
 @Composable
 fun AcaciaAnalyticsTab() {
     Column(
-        modifier = Modifier.fmw().fmh(),
+        modifier = Modifier.mw().fmh(),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Card(
             modifier = Modifier
-                .fmw()
+                .mw()
                 .height(300.dp),
             colors = CardDefaults.cardColors(containerColor = Color.White)
         ) {
             Column(
                 modifier = Modifier
-                    .fmw().fmh()
-                    .p(16.dp)
+                    .mw().fmh()
+                    .padg(16.dp)
             ) {
                 Text(
                     text = "Revenue Chart",
@@ -263,7 +263,7 @@ fun AcaciaAnalyticsTab() {
                 
                 Box(
                     modifier = Modifier
-                        .fmw()
+                        .mw()
                         .height(200.dp)
                         .background(Color(0xFFECF0F1), RoundedCornerShape(8.dp)),
                     contentAlignment = Alignment.Center
@@ -294,7 +294,7 @@ fun AcaciaAnalyticsTab() {
 fun AcaciaReportsTab() {
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(12.dp),
-        modifier = Modifier.fmw().fmh()
+        modifier = Modifier.mw().fmh()
     ) {
         items(listOf(
             "Monthly Report" to "PDF",
@@ -303,13 +303,13 @@ fun AcaciaReportsTab() {
             "Custom Report" to "CSV"
         )) { (title, format) ->
             Card(
-                modifier = Modifier.fmw(),
+                modifier = Modifier.mw(),
                 colors = CardDefaults.cardColors(containerColor = Color.White)
             ) {
                 Row(
                     modifier = Modifier
-                        .fmw()
-                        .p(16.dp),
+                        .mw()
+                        .padg(16.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -355,17 +355,17 @@ fun AcaciaReportsTab() {
 @Composable
 fun AcaciaSettingsTab() {
     Column(
-        modifier = Modifier.fmw().fmh(),
+        modifier = Modifier.mw().fmh(),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Card(
-            modifier = Modifier.fmw(),
+            modifier = Modifier.mw(),
             colors = CardDefaults.cardColors(containerColor = Color.White)
         ) {
             Column(
                 modifier = Modifier
-                    .fmw()
-                    .p(16.dp)
+                    .mw()
+                    .padg(16.dp)
             ) {
                 Text(
                     text = "Preferences",
@@ -384,7 +384,7 @@ fun AcaciaSettingsTab() {
                 ).forEach { (setting, enabled) ->
                     Row(
                         modifier = Modifier
-                            .fmw()
+                            .mw()
                             .padding(vertical = 8.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
@@ -423,15 +423,15 @@ fun AcaciaStatCard(
 ) {
     Card(
         modifier = Modifier
-            .fmw()
+            .mw()
             .height(120.dp)
             .shadow(elevation = 4.dp, shape = RoundedCornerShape(8.dp)),
         colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {
         Column(
             modifier = Modifier
-                .fmw().fmh()
-                .p(16.dp),
+                .mw().fmh()
+                .padg(16.dp),
             verticalArrangement = Arrangement.SpaceBetween
         ) {
             Column {

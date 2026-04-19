@@ -181,7 +181,13 @@ class AsmModifierParser(private val project: Project) {
                 // Skip first parameter (the Modifier receiver)
                 for (i in 1 until argumentTypes.size) {
                     val argType = argumentTypes[i]
-                    val typeName = simplifyTypeName(argType.className)
+                    // For primitive types, use descriptor; for objects, use className
+                    val typeInput = if (argType.sort == Type.OBJECT || argType.sort == Type.ARRAY) {
+                        argType.className
+                    } else {
+                        argType.descriptor
+                    }
+                    val typeName = simplifyTypeName(typeInput)
                     val paramName = generateParameterName(methodName, i, typeName)
                     
                     project.logger.lifecycle("Shortify: ASM Parameter ${i}: ${argType.className} -> $typeName (name: $paramName)")
@@ -233,7 +239,20 @@ class AsmModifierParser(private val project: Project) {
                 "kotlin.Double" -> "Double"
                 "kotlin.Boolean" -> "Boolean"
                 "kotlin.String" -> "String"
-                else -> className.substringAfterLast(".")
+                // Handle primitive types from ASM descriptors
+                "F" -> "Float"
+                "I" -> "Int" 
+                "D" -> "Double"
+                "Z" -> "Boolean"
+                "Ljava/lang/String;" -> "String"
+                else -> {
+                    // For class names, get simple name
+                    if (className.startsWith("L") && className.endsWith(";")) {
+                        className.substring(1, className.length - 1).substringAfterLast(".")
+                    } else {
+                        className.substringAfterLast(".")
+                    }
+                }
             }
         }
         
@@ -285,12 +304,12 @@ class AsmModifierParser(private val project: Project) {
                 "clickable" -> "onClick"
                 "pointerInput" -> "block"
                 else -> when (paramType) {
-                    "Dp" -> "dp"
-                    "Color" -> "color"
-                    "Float" -> "value"
-                    "Int" -> "value"
-                    "Boolean" -> "enabled"
-                    "String" -> "text"
+                    "Dp" -> "dp$paramIndex"
+                    "Color" -> "color$paramIndex"
+                    "Float" -> "value$paramIndex"
+                    "Int" -> "value$paramIndex"
+                    "Boolean" -> "enabled$paramIndex"
+                    "String" -> "text$paramIndex"
                     else -> "param$paramIndex"
                 }
             }

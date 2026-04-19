@@ -15,11 +15,15 @@ android {
         versionName = "1.0.0"
     }
     
+    android {
     sourceSets {
         named("main") {
-            java.srcDir("build/generated/source/shortify")
+            java {
+                srcDir(layout.buildDirectory.dir("generated/source/shortify"))
+            }
         }
     }
+}
 }
 
 kotlin {

@@ -25,13 +25,13 @@ class MainActivity : ComponentActivity() {
                 
                 Column(
                     modifier = Modifier
-                        .fmw().fmh()
+                        .mw().fmh()
                         .bg(Color(0xFFF5F5F5))
                 ) {
                     // Toggle buttons
                     Row(
                         modifier = Modifier
-                            .fmw()
+                            .mw()
                             .p(16.dp),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
@@ -57,7 +57,7 @@ class MainActivity : ComponentActivity() {
                     // Content area
                     Box(
                         modifier = Modifier
-                            .fmw()
+                            .mw()
                             .weight(1f)
                     ) {
                         if (showStandard) {
