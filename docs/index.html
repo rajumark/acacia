@@ -1,339 +1,365 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Acacia — Optimizer</title>
-<style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acacia - AI-Native Compose DSL</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-  :root {
-    --blue: #4285F4;
-    --green: #34A853;
-    --yellow: #FBBC04;
-    --red: #EA4335;
-    --bg: #ffffff;
-    --code-bg: #f8fafc;
-    --text-main: #0f172a;
-    --text-muted: #64748b;
-    --border: #e2e8f0;
-    --mono: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
-  }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #ffffff;
+            color: #1a1a1a;
+            line-height: 1.5;
+        }
 
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
-    background-color: var(--bg);
-    background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
-    background-size: 32px 32px;
-    color: var(--text-main);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    padding: 24px;
-    overflow: hidden;
-  }
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
 
-  /* Branding Header */
-  .brand-header {
-    position: absolute;
-    top: 40px;
-    left: 40px;
-    z-index: 100;
-  }
+        /* Left Navigation */
+        .nav {
+            width: 200px;
+            background: #f8f9fa;
+            border-right: 1px solid #e9ecef;
+            padding: 20px 0;
+        }
 
-  .brand-header h1 {
-    font-size: 28px;
-    letter-spacing: -1.5px;
-    font-weight: 800;
-    margin: 0;
-    user-select: none;
-  }
+        .nav-item {
+            display: block;
+            padding: 12px 20px;
+            color: #495057;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            border-left: 3px solid transparent;
+        }
 
-  .brand-header h1 span { color: var(--blue); }
+        .nav-item:hover {
+            background: #e9ecef;
+            color: #0066cc;
+            border-left-color: #0066cc;
+        }
 
-  /* Scissors Animation */
-  #scissors {
-    position: fixed;
-    pointer-events: none;
-    z-index: 200;
-    font-size: 32px;
-    transition: all 0.25s cubic-bezier(0.18, 0.89, 0.32, 1.28);
-    opacity: 0;
-    transform: translate(-50%, -50%) rotate(-45deg);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));
-  }
+        .nav-item.active {
+            background: #0066cc;
+            color: white;
+            border-left-color: #004499;
+        }
 
-  #scissors.active {
-    opacity: 1;
-    animation: snip 0.2s ease infinite;
-  }
+        /* Right Content */
+        .content {
+            flex: 1;
+            padding: 40px;
+            max-width: 800px;
+            overflow-y: auto;
+        }
 
-  @keyframes snip {
-    0%, 100% { transform: translate(-50%, -50%) rotate(-45deg) scale(1); }
-    50% { transform: translate(-50%, -50%) rotate(-45deg) scale(1.3) rotateX(30deg); }
-  }
+        .page {
+            display: none;
+        }
 
-  /* Token Badge (Persistent) */
-  .token-badge {
-    display: inline-flex;
-    align-items: center;
-    background: var(--green);
-    color: white;
-    padding: 2px 8px;
-    border-radius: 6px;
-    font-size: 10px;
-    font-weight: 800;
-    margin-left: 12px;
-    vertical-align: middle;
-    opacity: 0;
-    transform: scale(0.5);
-    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-  }
+        .page.active {
+            display: block;
+        }
 
-  .token-badge.visible {
-    opacity: 1;
-    transform: scale(1);
-  }
+        h1 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #1a1a1a;
+        }
 
-  .main-stage {
-    width: 100%;
-    max-width: 800px;
-    position: relative;
-  }
+        h2 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            margin-top: 24px;
+            color: #1a1a1a;
+        }
 
-  /* Code Panel */
-  .panel {
-    background: var(--code-bg);
-    border: 1px solid var(--border);
-    border-radius: 32px;
-    padding: 64px;
-    position: relative;
-    box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.1);
-    min-height: 500px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-  }
+        p {
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 16px;
+            color: #495057;
+        }
 
-  .code {
-    font-family: var(--mono);
-    font-size: 18px;
-    line-height: 2.4;
-    white-space: pre;
-    color: var(--text-muted);
-  }
+        .code {
+            background: #f6f8fa;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            padding: 16px;
+            font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+            font-size: 13px;
+            margin: 12px 0;
+            overflow-x: auto;
+        }
 
-  .line-container {
-    display: flex;
-    align-items: center;
-    flex-wrap: nowrap;
-  }
+        .btn {
+            display: inline-block;
+            padding: 8px 16px;
+            background: #0066cc;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background 0.2s ease;
+        }
 
-  .h-light {
-    display: inline-block;
-    padding: 0 4px;
-    border-radius: 4px;
-    transition: all 0.3s ease;
-    font-weight: 600;
-    position: relative;
-  }
+        .btn:hover {
+            background: #0052a3;
+        }
 
-  .h-active {
-    background: #ffffff;
-    box-shadow: 0 4px 12px rgba(66, 133, 244, 0.1);
-    color: var(--blue) !important;
-  }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin: 20px 0;
+        }
 
-  .del-char {
-    color: var(--red);
-    text-decoration: line-through;
-    opacity: 1;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    display: inline-block;
-  }
-  
-  .del-char.gone {
-    width: 0;
-    opacity: 0;
-    transform: translateY(-15px) rotate(15deg) scale(0);
-  }
+        .stat-card {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            padding: 20px;
+            text-align: center;
+        }
 
-  /* Success State */
-  .savings-card {
-    position: absolute;
-    inset: 0;
-    background: rgba(255, 255, 255, 0.98);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    z-index: 50;
-    backdrop-filter: blur(12px);
-    opacity: 0;
-    pointer-events: none;
-    transition: all 0.6s ease;
-    border-radius: 32px;
-    text-align: center;
-  }
+        .stat-number {
+            font-size: 28px;
+            font-weight: 700;
+            color: #0066cc;
+            margin-bottom: 8px;
+        }
 
-  .savings-card.show { opacity: 1; pointer-events: auto; }
-  .savings-card h2 { font-size: 56px; color: var(--green); font-weight: 900; margin-bottom: 8px; letter-spacing: -2px; }
+        .stat-label {
+            font-size: 14px;
+            color: #495057;
+        }
 
-  .replay-btn {
-    margin-top: 32px;
-    border: none;
-    background: var(--text-main);
-    color: white;
-    padding: 16px 36px;
-    border-radius: 100px;
-    cursor: pointer;
-    font-weight: 700;
-    font-size: 14px;
-    transition: all 0.2s;
-  }
+        .install-steps {
+            margin: 20px 0;
+        }
 
-  .replay-btn:hover { transform: translateY(-2px); background: black; box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
+        .install-step {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
 
-  @media (max-width: 640px) {
-    .panel { padding: 40px 24px; border-radius: 20px; }
-    .code { font-size: 14px; }
-    .brand-header { top: 20px; left: 20px; }
-  }
-</style>
+        .step-number {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            background: #0066cc;
+            color: white;
+            text-align: center;
+            line-height: 24px;
+            border-radius: 50%;
+            font-weight: 600;
+            font-size: 12px;
+            margin-bottom: 12px;
+        }
+
+        .step-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #1a1a1a;
+        }
+
+        .step-description {
+            color: #495057;
+            margin-bottom: 12px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            
+            .nav {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid #e9ecef;
+                padding: 10px 0;
+            }
+            
+            .nav-item {
+                padding: 10px 20px;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+        }
+    </style>
 </head>
 <body>
+    <div class="container">
+        <!-- Left Navigation -->
+        <nav class="nav">
+            <a href="#" class="nav-item active" onclick="showPage('home')">Home</a>
+            <a href="#" class="nav-item" onclick="showPage('installation')">Installation</a>
+            <a href="#" class="nav-item" onclick="showPage('demo')">Demo</a>
+            <a href="mapper_documentation.html" class="nav-item" onclick="showPage('mapper')">Mapper</a>
+            <a href="#" class="nav-item" onclick="showPage('about')">About</a>
+        </nav>
 
-<div id="scissors">✂️</div>
+        <!-- Right Content -->
+        <main class="content">
+            <!-- Home Page -->
+            <div id="home" class="page active">
+                <h1>Acacia - AI-Native Compose DSL</h1>
+                <p>Transform verbose Jetpack Compose code into concise, AI-friendly DSL. 391+ functions for modern Android development.</p>
+                
+                <div class="stats">
+                    <div class="stat-card">
+                        <div class="stat-number">391+</div>
+                        <div class="stat-label">DSL Functions</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">70%</div>
+                        <div class="stat-label">Less Code</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">AI</div>
+                        <div class="stat-label">Friendly</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">Fast</div>
+                        <div class="stat-label">Build Times</div>
+                    </div>
+                </div>
 
-<header class="brand-header">
-  <h1>Acacia<span>.</span></h1>
-</header>
+                <h2>Quick Start</h2>
+                <p>Add the plugin to your build.gradle.kts and start writing cleaner Compose code:</p>
+                <div class="code">plugins {
+    id("com.acacia") version "0.1.0"
+}</div>
 
-<main class="main-stage">
-  <div class="panel">
-    <div class="savings-card" id="savingsCard">
-      <div style="font-size: 48px; margin-bottom: 16px;">✨</div>
-      <h2 id="finalSavings">66% Less Tokens</h2>
-      <p style="text-transform: uppercase; font-weight: 700; color: var(--text-muted); letter-spacing: 2px;">Context Pruning Complete</p>
-      <button class="replay-btn" onclick="resetAnimation()">OPTIMIZE AGAIN</button>
+                <p><a href="https://plugins.gradle.org/plugin/com.acacia" target="_blank" class="btn">Get Plugin</a></p>
+            </div>
+
+            <!-- Installation Page -->
+            <div id="installation" class="page">
+                <h1>Installation</h1>
+                <p>Get started with Acacia in 3 simple steps.</p>
+                
+                <div class="install-steps">
+                    <div class="install-step">
+                        <div class="step-number">1</div>
+                        <div class="step-title">Add Plugin</div>
+                        <div class="step-description">Add Acacia plugin to your app's build.gradle.kts file.</div>
+                        <div class="code">plugins {
+    id("com.acacia") version "0.1.0"
+}</div>
+                    </div>
+                    
+                    <div class="install-step">
+                        <div class="step-number">2</div>
+                        <div class="step-title">Import Functions</div>
+                        <div class="step-description">Import generated DSL functions in your Composables.</div>
+                        <div class="code">import com.acacia.generated.*</div>
+                    </div>
+                    
+                    <div class="install-step">
+                        <div class="step-number">3</div>
+                        <div class="step-title">Start Using</div>
+                        <div class="step-description">Write cleaner, more concise Compose code.</div>
+                        <div class="code">Box(
+    Modifier.fmw().fmh().bg(Color.Blue).p(16.dp)
+) {
+    Text("Hello Acacia!")
+}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Demo Page -->
+            <div id="demo" class="page">
+                <h1>Code Examples</h1>
+                <p>See how Acacia transforms verbose Compose code into clean DSL.</p>
+                
+                <h2>Layout Functions</h2>
+                <div class="code">// Before
+Modifier.fillMaxWidth().fillMaxHeight().padding(16.dp)
+
+// After  
+Modifier.fmw().fmh().p(16.dp)</div>
+
+                <h2>Styling Functions</h2>
+                <div class="code">// Before
+Modifier.background(Color.Blue).shadow(
+    elevation = 4.dp,
+    shape = RoundedCornerShape(8.dp)
+)
+
+// After
+Modifier.bg(Color.Blue).sh(4.dp).cp(8.dp)</div>
+
+                <h2>Interaction Functions</h2>
+                <div class="code">// Before
+Modifier.clickable(
+    onClick = { /* handle click */ }
+).scrollable(
+    state = rememberScrollState()
+)
+
+// After
+Modifier.clk { /* click */ }.sc2(state)</div>
+            </div>
+
+            <!-- About Page -->
+            <div id="about" class="page">
+                <h1>About Acacia</h1>
+                <p>Acacia is an AI-Native Compose DSL plugin that transforms verbose Jetpack Compose code into concise, readable DSL functions.</p>
+                
+                <h2>Features</h2>
+                <p>• 391+ DSL functions for comprehensive coverage<br>
+                • 70% less code with same functionality<br>
+                • AI-friendly design for external model integration<br>
+                • Cross-platform foundation for future expansion<br>
+                • Performance optimized with intelligent caching<br>
+                • Type-safe and reliable</p>
+                
+                <h2>Links</h2>
+                <p>• <a href="https://plugins.gradle.org/plugin/com.acacia" target="_blank">Gradle Plugin Portal</a><br>
+                • <a href="https://github.com/rajumark/acacia" target="_blank">GitHub Repository</a><br>
+                • <a href="mapper_documentation.html" target="_blank">Function Mapper</a></p>
+            </div>
+        </main>
     </div>
 
-    <div class="code" id="mainCode">
-<div class="line-container"><span class="h-light" id="line1">Column</span>(<span id="badge1" class="token-badge"></span></div><div class="line-container">  mod = Mod</div><div class="line-container">    .<span class="h-light" id="line2">fillMaxWidth()</span><span id="badge2" class="token-badge"></span></div><div class="line-container">    .<span class="h-light" id="line3">padding(16.dp)</span><span id="badge3" class="token-badge"></span></div><div class="line-container">    .<span class="h-light" id="line4">clip(Rounded(8))</span><span id="badge4" class="token-badge"></span></div><div class="line-container">    .<span class="h-light" id="line5">background(Surface)</span><span id="badge5" class="token-badge"></span></div><div class="line-container">) {</div><div class="line-container">  <span class="h-light" id="line6">Text</span>("Hello")<span id="badge6" class="token-badge"></span></div><div class="line-container">  <span class="h-light" id="line7">Spacer</span>(Mod.h(8.dp))<span id="badge7" class="token-badge"></span></div><div class="line-container">}</div></div>
-  </div>
-</main>
-
-<script>
-  const mappings = {
-    line1: { std: "Column", acc: "Col", cost: 12 },
-    line2: { std: "fillMaxWidth()", acc: "fMW()", cost: 24 },
-    line3: { std: "padding(16.dp)", acc: "p(16.dp)", cost: 18 },
-    line4: { std: "clip(Rounded(8))", acc: "clp(R(8))", cost: 20 },
-    line5: { std: "background(Surface)", acc: "bg(Surf)", cost: 22 },
-    line6: { std: "Text", acc: "Txt", cost: 10 },
-    line7: { std: "Spacer", acc: "Sp", cost: 15 }
-  };
-
-  const totalSteps = 7;
-  let currentStep = 1;
-  let interval;
-  let autoReplayTimeout;
-
-  const savingsCard = document.getElementById('savingsCard');
-  const scissors = document.getElementById('scissors');
-
-  function moveScissorsTo(element) {
-    const rect = element.getBoundingClientRect();
-    scissors.style.left = `${rect.left + rect.width / 2}px`;
-    scissors.style.top = `${rect.top + rect.height / 2}px`;
-    scissors.classList.add('active');
-  }
-
-  function transformText(id) {
-    const el = document.getElementById(id);
-    const stepNum = id.replace('line', '');
-    const badge = document.getElementById('badge' + stepNum);
-    const config = mappings[id];
-    const std = config.std;
-    const acc = config.acc;
-    
-    let html = '';
-    for(let char of std) {
-      if (!acc.includes(char)) {
-        html += `<span class="del-char">${char}</span>`;
-      } else {
-        html += char;
-      }
-    }
-    el.innerHTML = html;
-
-    setTimeout(() => {
-      moveScissorsTo(el);
-      
-      const chars = el.querySelectorAll('.del-char');
-      chars.forEach((c, i) => {
-        setTimeout(() => c.classList.add('gone'), i * 40);
-      });
-
-      // Show persistent badge
-      setTimeout(() => {
-        el.innerText = acc;
-        badge.innerText = `-${config.cost}`;
-        badge.classList.add('visible');
-        scissors.classList.remove('active');
-      }, 500);
-    }, 600);
-  }
-
-  function resetAnimation() {
-    clearInterval(interval);
-    clearTimeout(autoReplayTimeout);
-    currentStep = 1;
-    savingsCard.classList.remove('show');
-    
-    // Reset badges
-    document.querySelectorAll('.token-badge').forEach(b => {
-        b.classList.remove('visible');
-        b.innerText = '';
-    });
-    
-    // Reset text
-    Object.keys(mappings).forEach(id => {
-      document.getElementById(id).innerText = mappings[id].std;
-    });
-
-    interval = setInterval(step, 2400);
-    step();
-  }
-
-  function step() {
-    document.querySelectorAll('.h-light').forEach(el => el.classList.remove('h-active'));
-    
-    if (currentStep > totalSteps) {
-      setTimeout(() => {
-        savingsCard.classList.add('show');
-        autoReplayTimeout = setTimeout(resetAnimation, 6000);
-      }, 1000);
-      clearInterval(interval);
-      return;
-    }
-
-    const id = 'line' + currentStep;
-    const target = document.getElementById(id);
-    if (target) {
-        target.classList.add('h-active');
-        transformText(id);
-    }
-    currentStep++;
-  }
-
-  // Initial start
-  setTimeout(resetAnimation, 500);
-</script>
-
+    <script>
+        function showPage(pageId) {
+            // Hide all pages
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            
+            // Remove active class from all nav items
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // Show selected page
+            document.getElementById(pageId).classList.add('active');
+            
+            // Add active class to clicked nav item
+            event.target.classList.add('active');
+        }
+    </script>
 </body>
 </html>
