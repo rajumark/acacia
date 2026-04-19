@@ -14,6 +14,11 @@ build/
 # Local configuration file (sdk path, etc)
 local.properties
 
+# Android SDK
+android-sdk/
+SDK/
+sdk/
+
 # Gradle properties with sensitive keys
 gradle.properties
 

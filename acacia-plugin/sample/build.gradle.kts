@@ -14,6 +14,12 @@ android {
         versionCode = 1
         versionName = "1.0.0"
     }
+    
+    sourceSets {
+        named("main") {
+            java.srcDir("build/generated/source/shortify")
+        }
+    }
 }
 
 kotlin {

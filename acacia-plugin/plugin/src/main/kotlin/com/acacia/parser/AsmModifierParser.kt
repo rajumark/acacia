@@ -20,6 +20,7 @@ class AsmModifierParser(private val project: Project) {
      * Parses jar files using ASM bytecode analysis to extract Modifier extension functions.
      */
     fun parseModifierFunctions(jarFiles: List<File>): List<ModifierFunction> {
+        println("Shortify: Starting ASM parsing for ${jarFiles.size} jar files")
         val functions = mutableListOf<ModifierFunction>()
         
         jarFiles.forEach { jarFile ->
@@ -57,14 +58,30 @@ class AsmModifierParser(private val project: Project) {
                 .forEach { entry ->
                     try {
                         jar.getInputStream(entry).use { input ->
-                            val classReader = ClassReader(input)
-                            val visitor = ModifierFunctionVisitor()
-                            classReader.accept(visitor, ClassReader.SKIP_DEBUG or ClassReader.SKIP_FRAMES)
-                            
-                            functions.addAll(visitor.modifierFunctions)
+                            try {
+                                // Validate the class file by reading the magic number
+                                val bytes = input.readBytes()
+                                if (bytes.size < 4 || 
+                                    (bytes[0].toInt() and 0xFF) != 0xCA || 
+                                    (bytes[1].toInt() and 0xFF) != 0xFE ||
+                                    (bytes[2].toInt() and 0xFF) != 0xBA ||
+                                    (bytes[3].toInt() and 0xFF) != 0xBE) {
+                                    project.logger.debug("Shortify: Invalid class file format for ${entry.name}")
+                                    return@forEach
+                                }
+                                
+                                // Parse with ASM
+                                val classReader = ClassReader(bytes)
+                                val visitor = ModifierFunctionVisitor()
+                                classReader.accept(visitor, ClassReader.SKIP_DEBUG or ClassReader.SKIP_FRAMES)
+                                
+                                functions.addAll(visitor.modifierFunctions)
+                            } catch (asmException: Exception) {
+                                project.logger.debug("Shortify: ASM parsing failed for ${entry.name}: ${asmException.message}")
+                            }
                         }
                     } catch (e: Exception) {
-                        project.logger.debug("Shortify: Failed to parse class ${entry.name}: ${e.message}")
+                        project.logger.debug("Shortify: Failed to read class ${entry.name}: ${e.message}")
                     }
                 }
         }
@@ -113,6 +130,11 @@ class AsmModifierParser(private val project: Project) {
                 return false
             }
             
+            // Skip synthetic methods and constructors
+            if ((access and Opcodes.ACC_SYNTHETIC) != 0 || name == "<init>" || name == "<clinit>") {
+                return false
+            }
+            
             // Must return Modifier
             val returnType = Type.getReturnType(descriptor)
             if (returnType.className != "androidx.compose.ui.Modifier") {
@@ -122,6 +144,15 @@ class AsmModifierParser(private val project: Project) {
             // First parameter must be Modifier (the receiver)
             val argumentTypes = Type.getArgumentTypes(descriptor)
             if (argumentTypes.isEmpty() || argumentTypes[0].className != "androidx.compose.ui.Modifier") {
+                return false
+            }
+            
+            // Additional filtering: skip known non-modifier functions
+            val skipFunctions = setOf(
+                "then", "composed", "element", "foldIn", "foldOut", 
+                "any", "all", "none", "count", "first", "last"
+            )
+            if (skipFunctions.contains(name)) {
                 return false
             }
             

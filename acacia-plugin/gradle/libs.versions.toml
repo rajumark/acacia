@@ -13,9 +13,10 @@ compose-bom = { group = "androidx.compose", name = "compose-bom", version = "202
 compose-activity = { module = "androidx.activity:activity-compose", version = "1.13.0" }
 compose-material3 = { module = "androidx.compose.material3:material3" }
 compose-uiTooling = { module = "androidx.compose.ui:ui-tooling" }
+compose-materialIcons = { module = "androidx.compose.material:material-icons-extended" }
 
 [bundles]
-compose = ["compose-activity", "compose-material3", "compose-uiTooling"]
+compose = ["compose-activity", "compose-material3", "compose-uiTooling", "compose-materialIcons"]
 
 [plugins]
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }

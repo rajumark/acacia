@@ -4,10 +4,9 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -22,12 +21,51 @@ class MainActivity : ComponentActivity() {
         WindowInsetsControllerCompat(window, window.decorView).isAppearanceLightStatusBars = true
         setContent {
             MaterialTheme {
-                Box(
-                    // Test the generated DSL functions
-                    Modifier.fmw().fmh().bg(Color.Blue).p(16.dp),
-                    contentAlignment = Alignment.Center
+                var showStandard by remember { mutableStateOf(true) }
+                
+                Column(
+                    modifier = Modifier
+                        .fmw().fmh()
+                        .bg(Color(0xFFF5F5F5))
                 ) {
-                    Text("Shortify DSL Test", color = Color.White)
+                    // Toggle buttons
+                    Row(
+                        modifier = Modifier
+                            .fmw()
+                            .p(16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Button(
+                            onClick = { showStandard = true },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = if (showStandard) Color(0xFF3498DB) else Color.Gray
+                            )
+                        ) {
+                            Text("Standard UI", color = Color.White)
+                        }
+                        
+                        Button(
+                            onClick = { showStandard = false },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = if (!showStandard) Color(0xFF27AE60) else Color.Gray
+                            )
+                        ) {
+                            Text("Acacia UI", color = Color.White)
+                        }
+                    }
+                    
+                    // Content area
+                    Box(
+                        modifier = Modifier
+                            .fmw()
+                            .weight(1f)
+                    ) {
+                        if (showStandard) {
+                            DashboardUIStandardCompose()
+                        } else {
+                            DashboardUIAcaciaCompose()
+                        }
+                    }
                 }
             }
         }

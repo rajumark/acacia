@@ -35,12 +35,14 @@ open class GenerateDslTask : DefaultTask() {
 
     @TaskAction
     fun generate() {
+        println("Shortify: Starting DSL generation task")
         if (!enabled.getOrElse(true)) {
             project.logger.lifecycle("Shortify: Plugin disabled")
             return
         }
         
         val isDebug = debug.getOrElse(false)
+        println("Shortify: Debug mode: $isDebug")
         
         try {
             // Execute the complete pipeline with fallbacks
@@ -49,21 +51,17 @@ open class GenerateDslTask : DefaultTask() {
             // Generate the DSL file
             val generatedFile = generateDslFile(modifierFunctions, isDebug)
             
-            // Generate AI documentation and training data
-            generateAiDocumentation(modifierFunctions, isDebug)
+            // TODO: Re-enable documentation generation after fixing the core issue
+            // generateAiDocumentation(modifierFunctions, isDebug)
             
             project.logger.lifecycle("Shortify: Generated ${modifierFunctions.size} DSL functions in ${generatedFile.absolutePath}")
             
         } catch (e: Exception) {
-            project.logger.warn("Shortify: Pipeline failed - using fallback: ${e.message}")
+            project.logger.error("Shortify: Pipeline failed: ${e.message}")
             if (isDebug) {
                 e.printStackTrace()
             }
-            
-            // Ultimate fallback: use hardcoded functions
-            val fallbackFunctions = getHardcodedModifierFunctions()
-            generateDslFile(fallbackFunctions, isDebug)
-            project.logger.lifecycle("Shortify: Used fallback with ${fallbackFunctions.size} functions")
+            throw e // Re-throw to ensure we always use jar-based generation
         }
     }
     
@@ -95,6 +93,14 @@ open class GenerateDslTask : DefaultTask() {
             val jars = extractor.extractJars(composeArtifacts)
             
             project.logger.lifecycle("Shortify: Found ${composeArtifacts.size} Compose artifacts, extracted ${jars.size} jar files")
+            if (isDebug) {
+                composeArtifacts.forEach { artifact ->
+                    project.logger.debug("Shortify: Artifact: ${artifact.group}:${artifact.name}:${artifact.version} (${artifact.file.extension})")
+                }
+                jars.forEach { jar ->
+                    project.logger.debug("Shortify: Jar: ${jar.name} (${jar.absolutePath})")
+                }
+            }
             jars
             
         } catch (e: Exception) {
@@ -117,11 +123,14 @@ open class GenerateDslTask : DefaultTask() {
                     }
                 }
                 
-                project.logger.lifecycle("Shortify: Discovered ${functions.size} Modifier functions for cross-platform")
+                project.logger.lifecycle("Shortify: Discovered ${functions.size} Modifier functions from Compose jars")
                 functions
             }
         } catch (e: Exception) {
-            project.logger.warn("Shortify: Cross-platform discovery failed: ${e.message}")
+            project.logger.warn("Shortify: ASM parsing failed: ${e.message}")
+            if (isDebug) {
+                e.printStackTrace()
+            }
             emptyList()
         }
         
@@ -156,10 +165,19 @@ open class GenerateDslTask : DefaultTask() {
      */
     private fun generateDslFile(functions: List<ModifierFunction>, isDebug: Boolean): File {
         return try {
-            // Use the working generator with cross-platform foundation
+            // Validate functions list
+            if (functions.isEmpty()) {
+                project.logger.warn("Shortify: No modifier functions found to generate")
+                throw IllegalStateException("No modifier functions available for generation")
+            }
+            
+            // Use dynamic name mappings based on parsed functions
             val generator = KotlinGenerator()
-            val namingEngine = NamingEngine(project)
-            val nameMappings = namingEngine.generateShortNames(functions)
+            val nameMappings = generateNameMappings(functions)
+            
+            if (isDebug) {
+                project.logger.lifecycle("Shortify: Generating ${functions.size} functions with mappings: $nameMappings")
+            }
             
             val generatedFile = generator.generateShortModifiers(functions, outputDir, nameMappings)
             
@@ -207,49 +225,52 @@ open class GenerateDslTask : DefaultTask() {
     }
     
     /**
-     * Hardcoded modifier functions for initial testing.
-     * In the future, this will be replaced by actual parsing from Compose jars.
+     * Generates dynamic name mappings for modifier functions.
      */
-    private fun getHardcodedModifierFunctions(): List<ModifierFunction> {
-        return listOf(
-            ModifierFunction(
-                name = "padding",
-                parameters = listOf(
-                    ModifierFunction.Parameter(
-                        name = "all",
-                        type = "Dp",
-                        hasDefault = false
-                    )
-                )
-            ),
-            ModifierFunction(
-                name = "background",
-                parameters = listOf(
-                    ModifierFunction.Parameter(
-                        name = "color",
-                        type = "Color",
-                        hasDefault = false
-                    )
-                )
-            ),
-            ModifierFunction(
-                name = "fillMaxWidth",
-                parameters = emptyList()
-            ),
-            ModifierFunction(
-                name = "paddingHorizontal",
-                parameters = listOf(
-                    ModifierFunction.Parameter(
-                        name = "padding",
-                        type = "Dp",
-                        hasDefault = false
-                    )
-                )
-            ),
-            ModifierFunction(
-                name = "fillMaxHeight",
-                parameters = emptyList()
-            )
-        )
+    private fun generateNameMappings(functions: List<ModifierFunction>): Map<String, String> {
+        val mappings = mutableMapOf<String, String>()
+        
+        functions.forEach { function ->
+            val shortName = when (function.name) {
+                "padding" -> "p"
+                "background" -> "bg"
+                "fillMaxWidth" -> "fmw"
+                "fillMaxHeight" -> "fmh"
+                "fillMaxSize" -> "fms"
+                "paddingHorizontal" -> "ph"
+                "paddingVertical" -> "pv"
+                "paddingStart" -> "ps"
+                "paddingTop" -> "pt"
+                "paddingEnd" -> "pe"
+                "paddingBottom" -> "pb"
+                "width" -> "w"
+                "height" -> "h"
+                "size" -> "s"
+                "wrapContentWidth" -> "wcw"
+                "wrapContentHeight" -> "wch"
+                "wrapContentSize" -> "wcs"
+                "border" -> "bd"
+                "clip" -> "cl"
+                "shadow" -> "sh"
+                "offset" -> "of"
+                "rotate" -> "rt"
+                "scale" -> "sc"
+                "alpha" -> "al"
+                "clickable" -> "ck"
+                "pointerInput" -> "pi"
+                else -> {
+                    // Generate abbreviation for unknown functions
+                    if (function.name.length <= 3) {
+                        function.name
+                    } else {
+                        // Take first character and last character
+                        function.name.first().toString() + function.name.last().toString()
+                    }
+                }
+            }
+            mappings[function.name] = shortName
+        }
+        
+        return mappings
     }
 }
