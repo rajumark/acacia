@@ -117,13 +117,15 @@ open class GenerateDslTask : DefaultTask() {
                 val parser = AsmModifierParser(project)
                 val functions = parser.parseModifierFunctions(jarFiles)
                 
+                // Always log the count - this is critical for debugging
+                project.logger.lifecycle("Shortify: Discovered ${functions.size} Modifier functions from Compose jars")
+                
                 if (isDebug) {
-                    functions.forEach { function ->
+                    functions.sortedBy { it.name }.forEach { function ->
                         project.logger.debug("Shortify: - ${function.name}(${function.parameters.joinToString(", ") { "${it.name}: ${it.type}" }})")
                     }
                 }
                 
-                project.logger.lifecycle("Shortify: Discovered ${functions.size} Modifier functions from Compose jars")
                 functions
             }
         } catch (e: Exception) {

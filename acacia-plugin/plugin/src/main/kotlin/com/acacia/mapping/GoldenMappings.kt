@@ -13,12 +13,12 @@ import kotlinx.serialization.json.decodeFromStream
  * - Collision-free (manually verified)
  * - AI-friendly (easy to learn)
  *
- * Edit golden-mappings.json to add/modify mappings. Functions not in this list
+ * Edit acacia-mapping.json to add/modify mappings. Functions not in this list
  * will use algorithmic naming with automatic collision detection.
  */
 object GoldenMappings {
 
-    private const val DEFAULT_JSON_PATH = "golden-mappings.json"
+    private const val DEFAULT_JSON_PATH = "acacia-mapping.json"
 
     /**
      * JSON data class for deserialization.
@@ -30,9 +30,9 @@ object GoldenMappings {
 
     /**
      * Map of original function names to their golden short names.
-     * Loaded from golden-mappings.json resource file.
+     * Loaded from acacia-mapping.json resource file.
      *
-     * To add a new mapping, edit golden-mappings.json:
+     * To add a new mapping, edit acacia-mapping.json:
      * "originalFunctionName": "short"
      */
     val mappings: Map<String, String> by lazy {
@@ -72,7 +72,7 @@ object GoldenMappings {
             }
         } catch (e: Exception) {
             // Fallback to default mappings if JSON loading fails
-            println("Warning: Failed to load golden-mappings.json, using defaults: ${e.message}")
+            println("Warning: Failed to load acacia-mapping.json, using defaults: ${e.message}")
             defaultMappings()
         }
     }

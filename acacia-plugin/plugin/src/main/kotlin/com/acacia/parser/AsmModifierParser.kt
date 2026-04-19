@@ -136,15 +136,16 @@ class AsmModifierParser(private val project: Project) {
                 return false
             }
             
-            // Must return Modifier
+            // Must return Modifier (check using descriptor format with slashes)
             val returnType = Type.getReturnType(descriptor)
-            if (returnType.className != "androidx.compose.ui.Modifier") {
+            val expectedModifierDescriptor = "Landroidx/compose/ui/Modifier;"
+            if (returnType.descriptor != expectedModifierDescriptor) {
                 return false
             }
             
-            // First parameter must be Modifier (the receiver)
+            // First parameter must be Modifier (the receiver) - check using descriptor
             val argumentTypes = Type.getArgumentTypes(descriptor)
-            if (argumentTypes.isEmpty() || argumentTypes[0].className != "androidx.compose.ui.Modifier") {
+            if (argumentTypes.isEmpty() || argumentTypes[0].descriptor != expectedModifierDescriptor) {
                 return false
             }
             
@@ -176,7 +177,7 @@ class AsmModifierParser(private val project: Project) {
                 
                 // Debug logging
                 project.logger.lifecycle("Shortify: ASM found method '$methodName' with descriptor '$descriptor'")
-                project.logger.lifecycle("Shortify: ASM argument types: ${argumentTypes.map { it.className }}")
+                project.logger.lifecycle("Shortify: ASM argument types: ${argumentTypes.map { it.descriptor }}")
                 
                 // Skip first parameter (the Modifier receiver)
                 for (i in 1 until argumentTypes.size) {
@@ -190,7 +191,7 @@ class AsmModifierParser(private val project: Project) {
                     val typeName = simplifyTypeName(typeInput)
                     val paramName = generateParameterName(methodName, i, typeName)
                     
-                    project.logger.lifecycle("Shortify: ASM Parameter ${i}: ${argType.className} -> $typeName (name: $paramName)")
+                    project.logger.lifecycle("Shortify: ASM Parameter ${i}: ${argType.descriptor} -> $typeName (name: $paramName)")
                     
                     parameters.add(
                         ModifierFunction.Parameter(
