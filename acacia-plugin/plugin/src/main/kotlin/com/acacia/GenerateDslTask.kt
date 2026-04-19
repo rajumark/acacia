@@ -161,7 +161,7 @@ open class GenerateDslTask : DefaultTask() {
     }
     
     /**
-     * Generates the DSL file with platform-aware error handling.
+     * Generates the DSL file with hybrid naming (Golden + Algorithmic).
      */
     private fun generateDslFile(functions: List<ModifierFunction>, isDebug: Boolean): File {
         return try {
@@ -171,19 +171,23 @@ open class GenerateDslTask : DefaultTask() {
                 throw IllegalStateException("No modifier functions available for generation")
             }
             
-            // Use dynamic name mappings based on parsed functions
+            // Use HybridNamingEngine for intelligent naming (Golden + Algorithmic with collision detection)
             val generator = KotlinGenerator()
-            val nameMappings = generateNameMappings(functions)
             
             if (isDebug) {
-                project.logger.lifecycle("Shortify: Generating ${functions.size} functions with mappings: $nameMappings")
+                project.logger.lifecycle("Shortify: Generating ${functions.size} functions with HybridNamingEngine")
             }
             
-            val generatedFile = generator.generateShortModifiers(functions, outputDir, nameMappings)
+            val generatedFile = generator.generateShortModifiers(functions, outputDir)
             
-            if (isDebug && generatedFile.exists()) {
-                project.logger.debug("Shortify: Generated platform-aware file contents:")
-                project.logger.debug(generatedFile.readText())
+            // Log naming statistics in debug mode
+            if (isDebug) {
+                val stats = generator.getNamingStatistics()
+                project.logger.lifecycle("Shortify: Naming Statistics - " +
+                    "Total: ${stats.totalGenerated}, " +
+                    "Golden: ${stats.goldenNames}, " +
+                    "Algorithmic: ${stats.algorithmicNames}, " +
+                    "Collisions Resolved: ${stats.collisionsResolved}")
             }
             
             generatedFile
@@ -224,80 +228,4 @@ open class GenerateDslTask : DefaultTask() {
         }
     }
     
-    /**
-     * Generates dynamic name mappings for modifier functions.
-     */
-    private fun generateNameMappings(functions: List<ModifierFunction>): Map<String, String> {
-        val mappings = mutableMapOf<String, String>()
-        
-        functions.forEach { function ->
-            val shortName = generateIndependentShortName(function.name)
-            mappings[function.name] = shortName
-        }
-        
-        return mappings
-    }
-    
-    /**
-     * Generates 100% independent short names without checking existing names.
-     * Same input always produces same output.
-     */
-    private fun generateIndependentShortName(originalName: String): String {
-        // Rule 1: Very short names (1-3 chars) keep as-is
-        if (originalName.length <= 3) {
-            return originalName.lowercase()
-        }
-        
-        // Rule 2: Use deterministic hash-based algorithm
-        return generateDeterministicAbbreviation(originalName)
-    }
-    
-    /**
-     * 100% deterministic abbreviation algorithm - no state, no collision checks.
-     */
-    private fun generateDeterministicAbbreviation(name: String): String {
-        // Strategy 1: CamelCase with fixed rules
-        if (name.any { it.isUpperCase() }) {
-            val camelCase = name.filter { it.isUpperCase() }.lowercase()
-            if (camelCase.length >= 2 && camelCase.length <= 4) {
-                return camelCase
-            }
-        }
-        
-        // Strategy 2: Mathematical hash-based abbreviation
-        val words = name.split("(?=[A-Z])|[_-]".toRegex()).filter { it.isNotEmpty() }
-        
-        return when {
-            words.size == 1 -> {
-                // Single word: mathematical position-based
-                val word = words[0].lowercase()
-                when {
-                    word.length <= 4 -> word
-                    word.length <= 6 -> word.take(2) + word.takeLast(2)
-                    word.length <= 8 -> word.first().toString() + word.drop(1).takeLast(6).take(2) + word.last().toString()
-                    else -> {
-                        // Use fixed positions: 1st, middle, last
-                        val midIndex = word.length / 2
-                        word.first().toString() + word[midIndex].toString() + word.last().toString()
-                    }
-                }
-            }
-            words.size == 2 -> {
-                // Two words: fixed pattern
-                val w1 = words[0].lowercase()
-                val w2 = words[1].lowercase()
-                w1.first() + w2.take(2)
-            }
-            words.size >= 3 -> {
-                // Multiple words: always first 3 letters
-                words.take(3).joinToString("") { it.first().lowercase() }
-            }
-            else -> {
-                // Fallback: use hash of first 3 chars + last 3 chars
-                val prefix = name.take(3).lowercase()
-                val suffix = name.takeLast(3).lowercase()
-                prefix + suffix
-            }
-        }
-    }
 }
