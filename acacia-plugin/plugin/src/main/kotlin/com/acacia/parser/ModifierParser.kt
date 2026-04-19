@@ -2,6 +2,11 @@ package com.acacia.parser
 
 import com.acacia.model.ModifierFunction
 import org.gradle.api.Project
+import org.objectweb.asm.ClassReader
+import org.objectweb.asm.ClassVisitor
+import org.objectweb.asm.MethodVisitor
+import org.objectweb.asm.Opcodes
+import org.objectweb.asm.Type
 import java.io.File
 import java.util.jar.JarFile
 
@@ -35,7 +40,7 @@ class ModifierParser(private val project: Project) {
     }
     
     /**
-     * Parses a single jar file for Modifier extension functions.
+     * Parses a single jar file for Modifier extension functions using ASM bytecode analysis.
      */
     private fun parseJarFile(jarFile: File): List<ModifierFunction> {
         val functions = mutableListOf<ModifierFunction>()
@@ -49,14 +54,14 @@ class ModifierParser(private val project: Project) {
                 }
                 .forEach { entry ->
                     try {
-                        val className = entry.name
-                            .removeSuffix(".class")
-                            .replace("/", ".")
+                        val inputStream = jar.getInputStream(entry)
+                        val classReader = ClassReader(inputStream)
+                        val visitor = ModifierClassVisitor()
                         
-                        // For now, use a simple heuristic to find Modifier functions
-                        // In a real implementation, this would use ASM bytecode analysis
-                        val modifierFunctions = extractModifierFunctionsFromClassName(className)
-                        functions.addAll(modifierFunctions)
+                        classReader.accept(visitor, ClassReader.SKIP_CODE)
+                        functions.addAll(visitor.modifierFunctions)
+                        
+                        inputStream.close()
                         
                     } catch (e: Exception) {
                         project.logger.debug("Shortify: Failed to parse class ${entry.name}: ${e.message}")
@@ -68,49 +73,108 @@ class ModifierParser(private val project: Project) {
     }
     
     /**
-     * Extracts Modifier functions using class name heuristics.
-     * This is a simplified approach - a production implementation would use ASM bytecode parsing.
+     * ASM ClassVisitor to extract Modifier extension functions from bytecode.
      */
-    private fun extractModifierFunctionsFromClassName(className: String): List<ModifierFunction> {
-        val functions = mutableListOf<ModifierFunction>()
+    private inner class ModifierClassVisitor : ClassVisitor(Opcodes.ASM9) {
+        val modifierFunctions = mutableListOf<ModifierFunction>()
         
-        // Known Modifier extension functions based on class names
-        val knownModifierFunctions = mapOf(
-            "androidx.compose.foundation.layout.PaddingKt" to listOf(
-                ModifierFunction("padding", listOf(
-                    ModifierFunction.Parameter("all", "Dp"),
-                    ModifierFunction.Parameter("horizontal", "Dp"),
-                    ModifierFunction.Parameter("vertical", "Dp"),
-                    ModifierFunction.Parameter("start", "Dp"),
-                    ModifierFunction.Parameter("top", "Dp"),
-                    ModifierFunction.Parameter("end", "Dp"),
-                    ModifierFunction.Parameter("bottom", "Dp")
-                ))
-            ),
-            "androidx.compose.foundation.layout.SizeKt" to listOf(
-                ModifierFunction("size", listOf(
-                    ModifierFunction.Parameter("width", "Dp"),
-                    ModifierFunction.Parameter("height", "Dp")
-                )),
-                ModifierFunction("width", listOf(
-                    ModifierFunction.Parameter("width", "Dp")
-                )),
-                ModifierFunction("height", listOf(
-                    ModifierFunction.Parameter("height", "Dp")
-                ))
-            ),
-            "androidx.compose.ui.BackgroundKt" to listOf(
-                ModifierFunction("background", listOf(
-                    ModifierFunction.Parameter("color", "Color")
-                ))
-            ),
-            "androidx.compose.foundation.layout.LayoutKt" to listOf(
-                ModifierFunction("fillMaxWidth", emptyList()),
-                ModifierFunction("fillMaxHeight", emptyList()),
-                ModifierFunction("fillMaxSize", emptyList())
-            )
-        )
+        override fun visit(
+            version: Int,
+            access: Int,
+            name: String,
+            signature: String?,
+            superName: String?,
+            interfaces: Array<out String>?
+        ) {
+            super.visit(version, access, name, signature, superName, interfaces)
+        }
         
-        return knownModifierFunctions[className] ?: emptyList()
+        override fun visitMethod(
+            access: Int,
+            name: String,
+            descriptor: String,
+            signature: String?,
+            exceptions: Array<out String>?
+        ): MethodVisitor? {
+            
+            // Check if this is a static method that returns Modifier
+            // Modifier extension functions are compiled as static functions taking Modifier as first parameter
+            if (isModifierExtensionFunction(descriptor)) {
+                return ModifierMethodVisitor(name, descriptor)
+            }
+            
+            return null
+        }
+        
+        private fun isModifierExtensionFunction(descriptor: String): Boolean {
+            // Check if method returns Modifier and takes Modifier as first parameter
+            val methodType = Type.getMethodType(descriptor)
+            val returnType = methodType.returnType.className
+            
+            // Check if return type is Modifier
+            if (returnType != "androidx.compose.ui.Modifier") {
+                return false
+            }
+            
+            // Check if first parameter is Modifier (extension function receiver)
+            val argumentTypes = methodType.argumentTypes
+            return argumentTypes.isNotEmpty() && 
+                   argumentTypes[0].className == "androidx.compose.ui.Modifier"
+        }
+        
+        private inner class ModifierMethodVisitor(
+            private val methodName: String,
+            private val methodDescriptor: String
+        ) : MethodVisitor(Opcodes.ASM9) {
+            
+            override fun visitEnd() {
+                super.visitEnd()
+                
+                val methodType = Type.getMethodType(methodDescriptor)
+                val argumentTypes = methodType.argumentTypes
+                
+                // Debug logging
+                project.logger.lifecycle("Shortify: Found method '$methodName' with descriptor '$methodDescriptor'")
+                project.logger.lifecycle("Shortify: Argument types: ${argumentTypes.map { it.className }}")
+                
+                // Skip the first parameter (Modifier receiver)
+                val parameters = argumentTypes.drop(1).mapIndexed { index, argType ->
+                    val typeName = mapAsmTypeToKotlinType(argType)
+                    project.logger.lifecycle("Shortify: Parameter ${index + 1}: ${argType.className} -> $typeName")
+                    ModifierFunction.Parameter(
+                        name = "param${index + 1}", // Will be enhanced with real parameter names
+                        type = typeName
+                    )
+                }
+                
+                val modifierFunction = ModifierFunction(
+                    name = methodName,
+                    parameters = parameters
+                )
+                
+                modifierFunctions.add(modifierFunction)
+            }
+            
+            private fun mapAsmTypeToKotlinType(asmType: Type): String {
+                return when (asmType.className) {
+                    "androidx.compose.ui.unit.Dp" -> "Dp"
+                    "androidx.compose.ui.graphics.Color" -> "Color"
+                    "androidx.compose.ui.graphics.Shape" -> "Shape"
+                    "androidx.compose.ui.graphics.Brush" -> "Brush"
+                    "androidx.compose.foundation.BorderStroke" -> "BorderStroke"
+                    "kotlin.Float" -> "Float"
+                    "kotlin.Int" -> "Int"
+                    "kotlin.Boolean" -> "Boolean"
+                    "kotlin.Function1" -> "Function1"
+                    "kotlin.Function2" -> "Function2"
+                    "kotlin.Function3" -> "Function3"
+                    else -> {
+                        // Extract simple name from fully qualified class name
+                        val className = asmType.className
+                        className.substringAfterLast(".")
+                    }
+                }
+            }
+        }
     }
 }

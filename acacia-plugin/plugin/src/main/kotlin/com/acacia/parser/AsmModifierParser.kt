@@ -21,6 +21,7 @@ class AsmModifierParser(private val project: Project) {
      */
     fun parseModifierFunctions(jarFiles: List<File>): List<ModifierFunction> {
         println("Shortify: Starting ASM parsing for ${jarFiles.size} jar files")
+        println("Shortify: ASM Parser v2.0 - Enhanced with proper parameter extraction")
         val functions = mutableListOf<ModifierFunction>()
         
         jarFiles.forEach { jarFile ->
@@ -173,11 +174,17 @@ class AsmModifierParser(private val project: Project) {
                 val argumentTypes = Type.getArgumentTypes(descriptor)
                 val parameters = mutableListOf<ModifierFunction.Parameter>()
                 
+                // Debug logging
+                project.logger.lifecycle("Shortify: ASM found method '$methodName' with descriptor '$descriptor'")
+                project.logger.lifecycle("Shortify: ASM argument types: ${argumentTypes.map { it.className }}")
+                
                 // Skip first parameter (the Modifier receiver)
                 for (i in 1 until argumentTypes.size) {
                     val argType = argumentTypes[i]
                     val typeName = simplifyTypeName(argType.className)
                     val paramName = generateParameterName(methodName, i, typeName)
+                    
+                    project.logger.lifecycle("Shortify: ASM Parameter ${i}: ${argType.className} -> $typeName (name: $paramName)")
                     
                     parameters.add(
                         ModifierFunction.Parameter(
