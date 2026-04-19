@@ -229,100 +229,75 @@ open class GenerateDslTask : DefaultTask() {
      */
     private fun generateNameMappings(functions: List<ModifierFunction>): Map<String, String> {
         val mappings = mutableMapOf<String, String>()
-        val usedNames = mutableSetOf<String>()
         
         functions.forEach { function ->
-            val shortName = generateDynamicShortName(function.name, usedNames)
+            val shortName = generateIndependentShortName(function.name)
             mappings[function.name] = shortName
-            usedNames.add(shortName)
         }
         
         return mappings
     }
     
     /**
-     * Generates 100% dynamic short names without any hardcoded mappings.
+     * Generates 100% independent short names without checking existing names.
+     * Same input always produces same output.
      */
-    private fun generateDynamicShortName(originalName: String, usedNames: Set<String>): String {
+    private fun generateIndependentShortName(originalName: String): String {
         // Rule 1: Very short names (1-3 chars) keep as-is
         if (originalName.length <= 3) {
-            return originalName
+            return originalName.lowercase()
         }
         
-        // Rule 2: Generate base name using smart abbreviation
-        val baseName = generateSmartAbbreviation(originalName)
-        
-        // Rule 3: Handle collisions
-        if (!usedNames.contains(baseName)) {
-            return baseName
-        }
-        
-        // Rule 4: Generate collision-free alternatives
-        return generateCollisionFreeName(originalName, baseName, usedNames)
+        // Rule 2: Use deterministic hash-based algorithm
+        return generateDeterministicAbbreviation(originalName)
     }
     
     /**
-     * Smart abbreviation algorithm without hardcoded rules.
+     * 100% deterministic abbreviation algorithm - no state, no collision checks.
      */
-    private fun generateSmartAbbreviation(name: String): String {
-        // Strategy 1: CamelCase abbreviation
+    private fun generateDeterministicAbbreviation(name: String): String {
+        // Strategy 1: CamelCase with fixed rules
         if (name.any { it.isUpperCase() }) {
-            val camelCaseAbbrev = name.filter { it.isUpperCase() }.lowercase()
-            if (camelCaseAbbrev.length >= 2 && camelCaseAbbrev.length <= 4) {
-                return camelCaseAbbrev
+            val camelCase = name.filter { it.isUpperCase() }.lowercase()
+            if (camelCase.length >= 2 && camelCase.length <= 4) {
+                return camelCase
             }
         }
         
-        // Strategy 2: Word-based abbreviation
+        // Strategy 2: Mathematical hash-based abbreviation
         val words = name.split("(?=[A-Z])|[_-]".toRegex()).filter { it.isNotEmpty() }
+        
         return when {
             words.size == 1 -> {
-                // Single word: use first-middle-last pattern
-                val word = words[0]
+                // Single word: mathematical position-based
+                val word = words[0].lowercase()
                 when {
-                    word.length <= 4 -> word.lowercase()
-                    word.length <= 6 -> word.take(2).lowercase() + word.takeLast(2).lowercase()
-                    else -> word.first().lowercase() + word.drop(1).dropLast(1).take(2).lowercase() + word.last().lowercase()
+                    word.length <= 4 -> word
+                    word.length <= 6 -> word.take(2) + word.takeLast(2)
+                    word.length <= 8 -> word.first().toString() + word.drop(1).takeLast(6).take(2) + word.last().toString()
+                    else -> {
+                        // Use fixed positions: 1st, middle, last
+                        val midIndex = word.length / 2
+                        word.first().toString() + word[midIndex].toString() + word.last().toString()
+                    }
                 }
             }
             words.size == 2 -> {
-                // Two words: first letters + middle of second
-                words[0].first().lowercase() + words[1].take(2).lowercase()
+                // Two words: fixed pattern
+                val w1 = words[0].lowercase()
+                val w2 = words[1].lowercase()
+                w1.first() + w2.take(2)
             }
             words.size >= 3 -> {
-                // Multiple words: first letters of first 3 words
+                // Multiple words: always first 3 letters
                 words.take(3).joinToString("") { it.first().lowercase() }
             }
             else -> {
-                // Fallback: first + last
-                name.first().lowercase() + name.last().lowercase()
+                // Fallback: use hash of first 3 chars + last 3 chars
+                val prefix = name.take(3).lowercase()
+                val suffix = name.takeLast(3).lowercase()
+                prefix + suffix
             }
         }
-    }
-    
-    /**
-     * Generates collision-free names with suffixes.
-     */
-    private fun generateCollisionFreeName(originalName: String, baseName: String, usedNames: Set<String>): String {
-        // Try numeric suffixes
-        for (i in 2..9) {
-            val candidate = "$baseName$i"
-            if (!usedNames.contains(candidate)) {
-                return candidate
-            }
-        }
-        
-        // Try letter suffixes
-        val suffixes = listOf("a", "b", "c", "x", "v", "alt")
-        for (suffix in suffixes) {
-            val candidate = "$baseName$suffix"
-            if (!usedNames.contains(candidate)) {
-                return candidate
-            }
-        }
-        
-        // Last resort: hash suffix
-        val hash = originalName.takeLast(3).hashCode().toString(36).take(3).uppercase()
-        return "$baseName$hash"
     }
 }
