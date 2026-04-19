@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.publish)
+    kotlin("plugin.serialization") version "2.3.0"
     signing
 }
 
@@ -36,6 +37,7 @@ dependencies {
     implementation("com.squareup:kotlinpoet:1.17.0")
     implementation("org.ow2.asm:asm:9.6")
     implementation("org.ow2.asm:asm-util:9.6")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
 }
 
 kotlin {
