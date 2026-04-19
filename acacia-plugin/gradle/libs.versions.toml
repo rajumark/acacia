@@ -12,11 +12,13 @@ androidx-lifecycle = { module = "androidx.lifecycle:lifecycle-runtime-ktx", vers
 compose-bom = { group = "androidx.compose", name = "compose-bom", version = "2026.03.01" }
 compose-activity = { module = "androidx.activity:activity-compose", version = "1.13.0" }
 compose-material3 = { module = "androidx.compose.material3:material3" }
+compose-material = { module = "androidx.compose.material:material" }
 compose-uiTooling = { module = "androidx.compose.ui:ui-tooling" }
 compose-materialIcons = { module = "androidx.compose.material:material-icons-extended" }
+compose-animation = { module = "androidx.compose.animation:animation" }
 
 [bundles]
-compose = ["compose-activity", "compose-material3", "compose-uiTooling", "compose-materialIcons"]
+compose = ["compose-activity", "compose-material3", "compose-material", "compose-uiTooling", "compose-materialIcons", "compose-animation"]
 
 [plugins]
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
