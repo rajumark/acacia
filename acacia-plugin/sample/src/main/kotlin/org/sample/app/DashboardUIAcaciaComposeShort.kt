@@ -3,38 +3,38 @@ package org.sample.app
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
 import com.acacia.generated.*
+import com.acacia.generated.Cl  // Cl = Color
+import com.acacia.generated.D   // D = Dp
+import com.acacia.generated.Al  // Al = Alignment
+import com.acacia.generated.Arr // Arr = Arrangement
 
 /**
- * Demo of short composable wrappers alongside short modifiers.
+ * Demo of short composable wrappers + short modifiers + short type aliases.
  * 
  * Generated short composables:
- * - C() = Column()
- * - R() = Row()  
- * - B() = Box()
- * - T() = Text()
- * - Btn() = Button()
- * - Cd() = Card()
- * - IC() = Icon()
- * - Sp() = Spacer()
+ * - C() = Column(), R() = Row(), B() = Box()
+ * - T() = Text(), Btn() = Button(), Cd() = Card()
  * - etc.
+ * 
+ * Generated type aliases:
+ * - Cl = Color, D = Dp, Sh = Shape
+ * - Arr = Arrangement, Al = Alignment
+ * - M = Modifier, etc.
  */
 @Composable
 fun DashboardUIAcaciaComposeShort() {
     // Using short composable wrappers C(), B(), T(), Btn(), Cd(), etc.
     B(
-        modifier = Modifier
+        modifier = M  // M = Modifier
             .fms()
-            .p(16.dp)
-            .bg(Color.White)
+            .p(16.D)  // D = Dp
+            .bg(Cl.White)  // Cl = Color
     ) {
         C(
-            modifier = Modifier.fmw(),
-            horizontalAlignment = Alignment.CenterHorizontally
+            modifier = M.fmw(),
+            horizontalAlignment = Al.CenterHorizontally  // Al = Alignment
         ) {
             // Short Text composable
             T(
@@ -46,10 +46,10 @@ fun DashboardUIAcaciaComposeShort() {
             
             // Short Card composable
             Cd(
-                modifier = Modifier
+                modifier = M
                     .fmw()
-                    .p(16.dp),
-                shape = RoundedCornerShape(8.dp)
+                    .p(16.D),
+                shape = RoundedCornerShape(8.D)
             ) {
                 C {
                     T("Card Content")
@@ -61,8 +61,8 @@ fun DashboardUIAcaciaComposeShort() {
             
             // Short Row composable
             R(
-                modifier = Modifier.fmw(),
-                horizontalArrangement = androidx.compose.foundation.layout.Arrangement.SpaceEvenly
+                modifier = M.fmw(),
+                horizontalArrangement = Arr.SpaceEvenly  // Arr = Arrangement
             ) {
                 // Short Button composables
                 Btn(onClick = { }) {
@@ -80,7 +80,7 @@ fun DashboardUIAcaciaComposeShort() {
                 value = "",
                 onValueChange = { },
                 label = { T("Enter text") },
-                modifier = Modifier.fmw()
+                modifier = M.fmw()
             )
             
             Sp()
@@ -88,7 +88,7 @@ fun DashboardUIAcaciaComposeShort() {
             // Short LazyColumn
             LC {
                 items(5) { index ->
-                    T("Item $index", modifier = Modifier.p(8.dp))
+                    T("Item $index", modifier = M.p(8.D))
                 }
             }
         }
@@ -115,14 +115,17 @@ fun DashboardUIAcaciaComposeShort() {
  * AFTER (Acacia Short DSL):
  * ```
  * C(
- *     modifier = Modifier.fmw().p(16.dp),
- *     horizontalAlignment = Alignment.CenterHorizontally
+ *     modifier = M.fmw().p(16.D),
+ *     horizontalAlignment = Al.CenterHorizontally
  * ) {
  *     T("Title")
  *     Sp()
- *     Cd(modifier = Modifier.fmw()) {
+ *     Cd(modifier = M.fmw()) {
  *         T("Content")
  *     }
+ *     Btn(onClick = { }) { T("Save") }
  * }
+ * 
+ * // Cl = Color, D = Dp, M = Modifier, Al = Alignment
  * ```
  */

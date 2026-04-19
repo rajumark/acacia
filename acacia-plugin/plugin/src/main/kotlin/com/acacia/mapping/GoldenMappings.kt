@@ -26,7 +26,8 @@ object GoldenMappings {
     @Serializable
     private data class GoldenMappingsData(
         val modifierMappings: Map<String, String> = emptyMap(),
-        val composableMappings: Map<String, String> = emptyMap()
+        val composableMappings: Map<String, String> = emptyMap(),
+        val typeAliasMappings: Map<String, String> = emptyMap()
     )
 
     /**
@@ -43,6 +44,14 @@ object GoldenMappings {
      */
     val composableMappings: Map<String, String> by lazy {
         loadMappingsFromJson().composableMappings
+    }
+
+    /**
+     * Map of original type names to their golden short type aliases.
+     * Loaded from acacia-mapping.json resource file.
+     */
+    val typeAliasMappings: Map<String, String> by lazy {
+        loadMappingsFromJson().typeAliasMappings
     }
 
     /**
@@ -80,6 +89,16 @@ object GoldenMappings {
     fun getComposableShortName(originalName: String): String? = composableMappings[originalName]
 
     /**
+     * Checks if a type name has a golden mapping.
+     */
+    fun hasTypeAliasMapping(originalName: String): Boolean = originalName in typeAliasMappings
+
+    /**
+     * Gets the golden short name for a type, or null if not in golden list.
+     */
+    fun getTypeAliasShortName(originalName: String): String? = typeAliasMappings[originalName]
+
+    /**
      * Loads mappings from the JSON resource file.
      * Falls back to default mappings if JSON fails to load.
      */
@@ -95,9 +114,10 @@ object GoldenMappings {
         } catch (e: Exception) {
             // Fallback to default mappings if JSON loading fails
             println("Warning: Failed to load acacia-mapping.json, using defaults: ${e.message}")
-            GoldenMappingsData(
+            return GoldenMappingsData(
                 modifierMappings = defaultModifierMappings(),
-                composableMappings = defaultComposableMappings()
+                composableMappings = defaultComposableMappings(),
+                typeAliasMappings = defaultTypeAliasMappings()
             )
         }
     }
@@ -203,5 +223,26 @@ object GoldenMappings {
         "ScrollableTabRow" to "STR",
         "Snackbar" to "SB",
         "SnackbarHost" to "SH"
+    )
+
+    /**
+     * Default fallback type alias mappings if JSON file fails to load.
+     */
+    private fun defaultTypeAliasMappings(): Map<String, String> = mapOf(
+        "Color" to "Cl",
+        "Shape" to "Sh",
+        "Brush" to "Br",
+        "ImageVector" to "IV",
+        "Painter" to "Pn",
+        "Dp" to "D",
+        "TextUnit" to "TU",
+        "DpOffset" to "DO",
+        "Offset" to "O",
+        "Arrangement" to "Arr",
+        "Alignment" to "Al",
+        "BorderStroke" to "BS",
+        "TextStyle" to "TS",
+        "FontWeight" to "FW",
+        "Modifier" to "M"
     )
 }

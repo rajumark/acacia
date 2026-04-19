@@ -137,5 +137,23 @@
     "ScrollableTabRow": "STR",
     "Snackbar": "SB",
     "SnackbarHost": "SH"
+  },
+  "typeAliasMappings": {
+    "_comment": "=== Type Aliases ===",
+    "Color": "Cl",
+    "Shape": "Sh",
+    "Brush": "Br",
+    "ImageVector": "IV",
+    "Painter": "Pn",
+    "Dp": "D",
+    "TextUnit": "TU",
+    "DpOffset": "DO",
+    "Offset": "O",
+    "Arrangement": "Arr",
+    "Alignment": "Al",
+    "BorderStroke": "BS",
+    "TextStyle": "TS",
+    "FontWeight": "FW",
+    "Modifier": "M"
   }
 }

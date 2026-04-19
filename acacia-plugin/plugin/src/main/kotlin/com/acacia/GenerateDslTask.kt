@@ -2,6 +2,7 @@ package com.acacia
 
 import com.acacia.generator.ComposableGenerator
 import com.acacia.generator.KotlinGenerator
+import com.acacia.generator.TypeAliasGenerator
 import com.acacia.model.ComposableFunction
 import com.acacia.model.ModifierFunction
 import com.acacia.parser.HybridModifierParser
@@ -71,11 +72,15 @@ open class GenerateDslTask : DefaultTask() {
             // Generate the composable DSL file
             val composableFile = generateComposableDslFile(composableFunctions, isDebug)
             
+            // Generate the type aliases file
+            val typeAliasFile = generateTypeAliasesFile(isDebug)
+            
             // TODO: Re-enable documentation generation after fixing the core issue
             // generateAiDocumentation(modifierFunctions, isDebug)
             
             project.logger.lifecycle("Shortify: Generated ${modifierFunctions.size} modifier functions in ${modifierFile.absolutePath}")
             project.logger.lifecycle("Shortify: Generated ${composableFunctions.size} composable functions in ${composableFile.absolutePath}")
+            project.logger.lifecycle("Shortify: Generated type aliases in ${typeAliasFile.absolutePath}")
             
         } catch (e: Exception) {
             project.logger.error("Shortify: Pipeline failed: ${e.message}")
@@ -239,6 +244,29 @@ open class GenerateDslTask : DefaultTask() {
             
         } catch (e: Exception) {
             project.logger.error("Shortify: Failed to generate composable DSL file: ${e.message}")
+            throw e
+        }
+    }
+    
+    /**
+     * Generates the type aliases file with short type names.
+     */
+    private fun generateTypeAliasesFile(isDebug: Boolean): File {
+        return try {
+            val generator = TypeAliasGenerator()
+            
+            if (isDebug) {
+                project.logger.lifecycle("Shortify: Generating type aliases")
+            }
+            
+            val generatedFile = generator.generateTypeAliasesRaw(outputDir.get().asFile)
+            
+            project.logger.lifecycle("Shortify: Generated 17 type aliases (Cl, D, Arr, Al, etc.)")
+            
+            generatedFile
+            
+        } catch (e: Exception) {
+            project.logger.error("Shortify: Failed to generate type aliases file: ${e.message}")
             throw e
         }
     }
