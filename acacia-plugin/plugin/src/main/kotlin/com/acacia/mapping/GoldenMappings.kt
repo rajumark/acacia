@@ -25,62 +25,87 @@ object GoldenMappings {
      */
     @Serializable
     private data class GoldenMappingsData(
-        val mappings: Map<String, String>
+        val modifierMappings: Map<String, String> = emptyMap(),
+        val composableMappings: Map<String, String> = emptyMap()
     )
 
     /**
-     * Map of original function names to their golden short names.
+     * Map of original modifier function names to their golden short names.
      * Loaded from acacia-mapping.json resource file.
-     *
-     * To add a new mapping, edit acacia-mapping.json:
-     * "originalFunctionName": "short"
      */
-    val mappings: Map<String, String> by lazy {
-        loadMappingsFromJson()
+    val modifierMappings: Map<String, String> by lazy {
+        loadMappingsFromJson().modifierMappings
     }
 
     /**
-     * Set of all golden short names for quick collision checking.
+     * Map of original composable function names to their golden short names.
+     * Loaded from acacia-mapping.json resource file.
      */
-    val goldenShortNames: Set<String> by lazy {
-        mappings.values.toSet()
+    val composableMappings: Map<String, String> by lazy {
+        loadMappingsFromJson().composableMappings
     }
 
     /**
-     * Checks if a function name has a golden mapping.
+     * Set of all golden modifier short names for quick collision checking.
      */
-    fun hasGoldenMapping(originalName: String): Boolean = originalName in mappings
+    val modifierShortNames: Set<String> by lazy {
+        modifierMappings.values.toSet()
+    }
 
     /**
-     * Gets the golden short name for a function, or null if not in golden list.
+     * Set of all golden composable short names for quick collision checking.
      */
-    fun getGoldenShortName(originalName: String): String? = mappings[originalName]
+    val composableShortNames: Set<String> by lazy {
+        composableMappings.values.toSet()
+    }
+
+    /**
+     * Checks if a modifier function name has a golden mapping.
+     */
+    fun hasModifierMapping(originalName: String): Boolean = originalName in modifierMappings
+
+    /**
+     * Gets the golden short name for a modifier function, or null if not in golden list.
+     */
+    fun getModifierShortName(originalName: String): String? = modifierMappings[originalName]
+
+    /**
+     * Checks if a composable function name has a golden mapping.
+     */
+    fun hasComposableMapping(originalName: String): Boolean = originalName in composableMappings
+
+    /**
+     * Gets the golden short name for a composable function, or null if not in golden list.
+     */
+    fun getComposableShortName(originalName: String): String? = composableMappings[originalName]
 
     /**
      * Loads mappings from the JSON resource file.
      * Falls back to default mappings if JSON fails to load.
      */
-    private fun loadMappingsFromJson(): Map<String, String> {
+    private fun loadMappingsFromJson(): GoldenMappingsData {
         return try {
             val json = Json { ignoreUnknownKeys = true }
             val inputStream = this::class.java.classLoader.getResourceAsStream(DEFAULT_JSON_PATH)
                 ?: throw IllegalStateException("Could not find $DEFAULT_JSON_PATH in resources")
 
             inputStream.use { stream ->
-                val data = json.decodeFromStream<GoldenMappingsData>(stream)
-                data.mappings
+                json.decodeFromStream<GoldenMappingsData>(stream)
             }
         } catch (e: Exception) {
             // Fallback to default mappings if JSON loading fails
             println("Warning: Failed to load acacia-mapping.json, using defaults: ${e.message}")
-            defaultMappings()
+            GoldenMappingsData(
+                modifierMappings = defaultModifierMappings(),
+                composableMappings = defaultComposableMappings()
+            )
         }
     }
 
     /**
-     * Default fallback mappings if JSON file fails to load.
+     * Default fallback modifier mappings if JSON file fails to load.
      */
-    private fun defaultMappings(): Map<String, String> = mapOf(
+    private fun defaultModifierMappings(): Map<String, String> = mapOf(
         "padding" to "p",
         "paddingHorizontal" to "px",
         "paddingVertical" to "py",
@@ -125,5 +150,58 @@ object GoldenMappings {
         "testTag" to "tt",
         "semantics" to "sem",
         "then" to "th"
+    )
+
+    /**
+     * Default fallback composable mappings if JSON file fails to load.
+     */
+    private fun defaultComposableMappings(): Map<String, String> = mapOf(
+        "Column" to "C",
+        "Row" to "R",
+        "Box" to "B",
+        "Text" to "T",
+        "Button" to "Btn",
+        "OutlinedButton" to "OBtn",
+        "TextButton" to "TBtn",
+        "ElevatedButton" to "EBtn",
+        "FilledTonalButton" to "FTBtn",
+        "Card" to "Cd",
+        "ElevatedCard" to "ECd",
+        "OutlinedCard" to "OCd",
+        "Icon" to "Ic",
+        "IconButton" to "IBtn",
+        "IconToggleButton" to "ITBtn",
+        "LazyColumn" to "LC",
+        "LazyRow" to "LR",
+        "LazyVerticalGrid" to "LVG",
+        "LazyHorizontalGrid" to "LHG",
+        "Surface" to "S",
+        "Scaffold" to "Scaf",
+        "TopAppBar" to "TAB",
+        "BottomAppBar" to "BAB",
+        "FloatingActionButton" to "FAB",
+        "ExtendedFloatingActionButton" to "EFAB",
+        "Dialog" to "Dlg",
+        "AlertDialog" to "ADlg",
+        "Checkbox" to "Cb",
+        "Switch" to "Sw",
+        "RadioButton" to "RB",
+        "Slider" to "Sl",
+        "TextField" to "TF",
+        "OutlinedTextField" to "OTF",
+        "BasicTextField" to "BTF",
+        "CircularProgressIndicator" to "CPI",
+        "LinearProgressIndicator" to "LPI",
+        "Divider" to "Div",
+        "Spacer" to "Sp",
+        "VerticalDivider" to "VDiv",
+        "HorizontalDivider" to "HDiv",
+        "Image" to "Img",
+        "AsyncImage" to "AImg",
+        "Tab" to "Tb",
+        "TabRow" to "TR",
+        "ScrollableTabRow" to "STR",
+        "Snackbar" to "SB",
+        "SnackbarHost" to "SH"
     )
 }

@@ -1,6 +1,8 @@
 package com.acacia
 
+import com.acacia.generator.ComposableGenerator
 import com.acacia.generator.KotlinGenerator
+import com.acacia.model.ComposableFunction
 import com.acacia.model.ModifierFunction
 import com.acacia.parser.HybridModifierParser
 import com.acacia.cache.CacheManager
@@ -57,16 +59,23 @@ open class GenerateDslTask : DefaultTask() {
         println("Shortify: Debug mode: $isDebug")
         
         try {
-            // Execute the complete pipeline with fallbacks
+            // Execute the complete pipeline for modifiers
             val modifierFunctions = executePipelineWithFallbacks(isDebug)
             
-            // Generate the DSL file
-            val generatedFile = generateDslFile(modifierFunctions, isDebug)
+            // Execute the composable pipeline
+            val composableFunctions = executeComposablePipeline(isDebug)
+            
+            // Generate the modifier DSL file
+            val modifierFile = generateDslFile(modifierFunctions, isDebug)
+            
+            // Generate the composable DSL file
+            val composableFile = generateComposableDslFile(composableFunctions, isDebug)
             
             // TODO: Re-enable documentation generation after fixing the core issue
             // generateAiDocumentation(modifierFunctions, isDebug)
             
-            project.logger.lifecycle("Shortify: Generated ${modifierFunctions.size} DSL functions in ${generatedFile.absolutePath}")
+            project.logger.lifecycle("Shortify: Generated ${modifierFunctions.size} modifier functions in ${modifierFile.absolutePath}")
+            project.logger.lifecycle("Shortify: Generated ${composableFunctions.size} composable functions in ${composableFile.absolutePath}")
             
         } catch (e: Exception) {
             project.logger.error("Shortify: Pipeline failed: ${e.message}")
@@ -164,7 +173,78 @@ open class GenerateDslTask : DefaultTask() {
     }
     
     /**
-     * Generates the DSL file with hybrid naming (Golden + Algorithmic).
+     * Executes the composable function parsing pipeline.
+     */
+    private fun executeComposablePipeline(isDebug: Boolean): List<ComposableFunction> {
+        // Stage 1: Get input JARs
+        val jarFiles = inputJars.files.filter { it.exists() && it.isFile && it.extension == "jar" }
+        
+        if (jarFiles.isEmpty()) {
+            project.logger.warn("Shortify: No Compose JAR files found for composable parsing.")
+            return emptyList()
+        }
+        
+        // Stage 2: Parse composable functions
+        return try {
+            val parser = HybridModifierParser(project)
+            val functions = parser.parseComposableFunctions(jarFiles)
+            
+            project.logger.lifecycle("Shortify: Discovered ${functions.size} Composable functions from Compose jars")
+            
+            if (isDebug) {
+                functions.sortedBy { it.name }.forEach { function ->
+                    project.logger.debug("Shortify: Composable - ${function.name}(${function.parameters.joinToString(", ") { "${it.name}: ${it.type}" }})")
+                }
+            }
+            
+            functions
+        } catch (e: Exception) {
+            project.logger.warn("Shortify: Composable parsing failed: ${e.message}")
+            if (isDebug) {
+                e.printStackTrace()
+            }
+            emptyList()
+        }
+    }
+    
+    /**
+     * Generates the composable DSL file with hybrid naming.
+     */
+    private fun generateComposableDslFile(functions: List<ComposableFunction>, isDebug: Boolean): File {
+        return try {
+            if (functions.isEmpty()) {
+                // Return an empty file indicator
+                val emptyFile = File(outputDir.get().asFile, "ShortComposables.kt")
+                emptyFile.parentFile.mkdirs()
+                emptyFile.writeText("// No composable functions found to generate")
+                return emptyFile
+            }
+            
+            val generator = ComposableGenerator()
+            
+            if (isDebug) {
+                project.logger.lifecycle("Shortify: Generating ${functions.size} composable functions")
+            }
+            
+            val generatedFile = generator.generateShortComposables(functions, outputDir.get().asFile)
+            
+            // Log naming statistics
+            val stats = generator.getNamingStatistics()
+            project.logger.lifecycle("Shortify: Composable Naming - " +
+                "Total: ${stats.totalGenerated}, " +
+                "Golden: ${stats.goldenNames}, " +
+                "Algorithmic: ${stats.algorithmicNames}")
+            
+            generatedFile
+            
+        } catch (e: Exception) {
+            project.logger.error("Shortify: Failed to generate composable DSL file: ${e.message}")
+            throw e
+        }
+    }
+    
+    /**
+     * Generates the modifier DSL file with hybrid naming (Golden + Algorithmic).
      */
     private fun generateDslFile(functions: List<ModifierFunction>, isDebug: Boolean): File {
         return try {
@@ -185,7 +265,7 @@ open class GenerateDslTask : DefaultTask() {
             
             // Log naming statistics (always show for visibility)
             val stats = generator.getNamingStatistics()
-            project.logger.lifecycle("Shortify: Naming Statistics - " +
+            project.logger.lifecycle("Shortify: Modifier Naming - " +
                 "Total: ${stats.totalGenerated}, " +
                 "Golden: ${stats.goldenNames}, " +
                 "Algorithmic: ${stats.algorithmicNames}, " +

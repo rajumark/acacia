@@ -1,5 +1,6 @@
 package com.acacia.parser
 
+import com.acacia.model.ComposableFunction
 import com.acacia.model.ModifierFunction
 import kotlinx.metadata.KmFunction
 import kotlinx.metadata.KmValueParameter
@@ -49,6 +50,334 @@ class HybridModifierParser(private val project: Project) {
 
         project.logger.lifecycle("Shortify: Parsed ${functions.size} Modifier functions (with default values from metadata)")
         return functions
+    }
+
+    /**
+     * Parses jar files to extract @Composable functions.
+     * Targets: Column, Row, Box, Text, Button, etc.
+     */
+    fun parseComposableFunctions(jarFiles: List<File>): List<ComposableFunction> {
+        val functions = mutableListOf<ComposableFunction>()
+        val metadataMap = mutableMapOf<String, Metadata>()
+
+        // First pass: collect all Kotlin metadata
+        jarFiles.forEach { jarFile ->
+            try {
+                collectMetadata(jarFile, metadataMap)
+            } catch (e: Exception) {
+                project.logger.debug("Shortify: Failed to collect metadata from ${jarFile.name}: ${e.message}")
+            }
+        }
+
+        // Second pass: parse composable functions
+        jarFiles.forEach { jarFile ->
+            try {
+                val jarFunctions = parseJarFileForComposables(jarFile, metadataMap)
+                functions.addAll(jarFunctions)
+            } catch (e: Exception) {
+                project.logger.debug("Shortify: Failed to parse composables from ${jarFile.name}: ${e.message}")
+            }
+        }
+
+        project.logger.lifecycle("Shortify: Parsed ${functions.size} Composable functions")
+        return functions
+    }
+
+    /**
+     * Parses a single jar file for @Composable functions.
+     */
+    private fun parseJarFileForComposables(jarFile: File, metadataMap: Map<String, Metadata>): List<ComposableFunction> {
+        val functions = mutableListOf<ComposableFunction>()
+
+        JarFile(jarFile).use { jar ->
+            jar.entries().asSequence()
+                .filter { entry ->
+                    entry.name.endsWith(".class") &&
+                    !entry.name.contains("$") &&
+                    !entry.name.contains("META-INF") &&
+                    !entry.name.contains("BuildConfig")
+                }
+                .forEach { entry ->
+                    try {
+                        jar.getInputStream(entry).use { input ->
+                            val bytes = input.readBytes()
+                            val className = entry.name.removeSuffix(".class").replace("/", ".")
+                            val packageName = className.substringBeforeLast(".", "")
+                            val classMetadata = metadataMap[className]
+
+                            val classFunctions = parseClassForComposables(bytes, packageName, classMetadata)
+                            functions.addAll(classFunctions)
+                        }
+                    } catch (e: Exception) {
+                        project.logger.debug("Shortify: Failed to parse composables from class ${entry.name}: ${e.message}")
+                    }
+                }
+        }
+
+        return functions
+    }
+
+    /**
+     * Parses a class to find @Composable functions.
+     */
+    private fun parseClassForComposables(bytes: ByteArray, packageName: String, metadata: Metadata?): List<ComposableFunction> {
+        val functions = mutableListOf<ComposableFunction>()
+
+        // Parse Kotlin metadata if available
+        val kmFunctions = if (metadata != null) {
+            try {
+                when (val km = KotlinClassMetadata.read(metadata)) {
+                    is KotlinClassMetadata.Class -> km.toKmClass().functions
+                    is KotlinClassMetadata.FileFacade -> km.toKmPackage().functions
+                    is KotlinClassMetadata.SyntheticClass -> emptyList()
+                    is KotlinClassMetadata.MultiFileClassFacade -> km.toKmPackage().functions
+                    is KotlinClassMetadata.MultiFileClassPart -> km.toKmPackage().functions
+                    is KotlinClassMetadata.Unknown -> emptyList()
+                    else -> emptyList()
+                }
+            } catch (e: Exception) {
+                emptyList()
+            }
+        } else emptyList()
+
+        // Create a map of function signature to KmFunction
+        val kmFunctionMap = kmFunctions.associateBy { kmFunc ->
+            val paramTypes = kmFunc.valueParameters.joinToString(",") { param ->
+                param.type.toString()
+            }
+            "${kmFunc.name}($paramTypes)"
+        }
+
+        // Parse with ASM to find @Composable annotations
+        val classReader = ClassReader(bytes)
+        val visitor = ComposableFunctionVisitor(packageName, kmFunctionMap)
+        classReader.accept(visitor, ClassReader.SKIP_DEBUG or ClassReader.SKIP_FRAMES)
+
+        return visitor.composableFunctions
+    }
+
+    /**
+     * ASM ClassVisitor that extracts @Composable functions.
+     */
+    private inner class ComposableFunctionVisitor(
+        private val packageName: String,
+        private val kmFunctionMap: Map<String, kotlinx.metadata.KmFunction>
+    ) : ClassVisitor(Opcodes.ASM9) {
+        val composableFunctions = mutableListOf<ComposableFunction>()
+
+        override fun visitMethod(
+            access: Int,
+            name: String,
+            descriptor: String,
+            signature: String?,
+            exceptions: Array<out String>?
+        ): MethodVisitor? {
+            // Must be public static
+            if ((access and Opcodes.ACC_PUBLIC) == 0 || (access and Opcodes.ACC_STATIC) == 0) {
+                return null
+            }
+
+            // Skip synthetic methods and constructors
+            if ((access and Opcodes.ACC_SYNTHETIC) != 0 || name == "<init>" || name == "<clinit>") {
+                return null
+            }
+
+            return ComposableMethodVisitor(name, descriptor, packageName)
+        }
+
+        /**
+         * ASM MethodVisitor to extract @Composable function details.
+         */
+        private inner class ComposableMethodVisitor(
+            private val methodName: String,
+            private val descriptor: String,
+            private val packageName: String
+        ) : MethodVisitor(Opcodes.ASM9) {
+            private var isComposable = false
+
+            override fun visitAnnotation(descriptor: String?, visible: Boolean): MethodVisitor? {
+                // Check for @Composable annotation
+                if (descriptor == "Landroidx/compose/runtime/Composable;") {
+                    isComposable = true
+                }
+                return this
+            }
+
+            override fun visitEnd() {
+                if (!isComposable) return
+
+                // Skip internal/synthetic functions
+                if (methodName.contains("-")) return
+
+                // Target only commonly used composable functions
+                if (!isTargetedComposable(methodName)) return
+
+                val argumentTypes = Type.getArgumentTypes(descriptor)
+                val parameters = mutableListOf<ComposableFunction.Parameter>()
+
+                // Create signature to lookup in metadata
+                val asmParamTypes = argumentTypes.joinToString(",") { it.descriptor }
+                val signature = "$methodName($asmParamTypes)"
+                val kmFunction = kmFunctionMap[signature]
+
+                // Parse parameters
+                for (i in argumentTypes.indices) {
+                    val argType = argumentTypes[i]
+                    val typeName = simplifyComposableTypeName(argType.descriptor)
+                    val kmParam = kmFunction?.valueParameters?.getOrNull(i)
+                    val hasDefault = kmParam?.declaresDefaultValue ?: false
+                    val defaultValue = if (hasDefault) {
+                        inferComposableDefaultValue(methodName, kmParam, typeName)
+                    } else null
+
+                    parameters.add(
+                        ComposableFunction.Parameter(
+                            name = kmParam?.name ?: generateComposableParamName(methodName, i, typeName),
+                            type = typeName,
+                            hasDefault = hasDefault,
+                            defaultValue = defaultValue
+                        )
+                    )
+                }
+
+                val function = ComposableFunction(
+                    name = methodName,
+                    packageName = packageName,
+                    parameters = parameters,
+                    isDeprecated = false
+                )
+
+                composableFunctions.add(function)
+            }
+
+            private fun isTargetedComposable(name: String): Boolean {
+                // Target the most common composable functions
+                val targetFunctions = setOf(
+                    "Column", "Row", "Box", "Text", "Button", "OutlinedButton", "TextButton",
+                    "ElevatedButton", "FilledTonalButton",
+                    "Card", "ElevatedCard", "OutlinedCard",
+                    "Icon", "IconButton", "IconToggleButton",
+                    "LazyColumn", "LazyRow", "LazyVerticalGrid", "LazyHorizontalGrid",
+                    "Surface", "Scaffold", "TopAppBar", "BottomAppBar",
+                    "NavigationBar", "NavigationBarItem",
+                    "FloatingActionButton", "ExtendedFloatingActionButton",
+                    "Dialog", "AlertDialog", "Popup",
+                    "Checkbox", "Switch", "RadioButton", "Slider",
+                    "TextField", "OutlinedTextField", "BasicTextField",
+                    "CircularProgressIndicator", "LinearProgressIndicator",
+                    "Divider", "Spacer", "VerticalDivider", "HorizontalDivider",
+                    "Image", "AsyncImage",
+                    "Tab", "TabRow", "ScrollableTabRow",
+                    "DrawerSheet", "ModalDrawerSheet", "PermanentDrawerSheet",
+                    "ModalNavigationDrawer", "PermanentNavigationDrawer", "DismissibleNavigationDrawer",
+                    "DropDownMenu", "DropDownMenuItem",
+                    "TooltipBox", "PlainTooltip", "RichTooltip",
+                    "Badge", "BadgedBox",
+                    "Chip", "AssistChip", "FilterChip", "InputChip", "SuggestionChip",
+                    "ListItem", "ListItemDefaults",
+                    "Snackbar", "SnackbarHost"
+                )
+                return name in targetFunctions
+            }
+
+            private fun simplifyComposableTypeName(descriptor: String): String {
+                return when (descriptor) {
+                    "F" -> "Float"
+                    "I" -> "Int"
+                    "D" -> "Double"
+                    "Z" -> "Boolean"
+                    "J" -> "Long"
+                    "Ljava/lang/String;" -> "String"
+                    else -> {
+                        if (descriptor.startsWith("L") && descriptor.endsWith(";")) {
+                            val className = descriptor.substring(1, descriptor.length - 1).replace("/", ".")
+                            when {
+                                className == "androidx.compose.ui.Modifier" -> "Modifier"
+                                className == "androidx.compose.ui.unit.Dp" -> "Dp"
+                                className == "androidx.compose.ui.graphics.Color" -> "Color"
+                                className == "androidx.compose.ui.graphics.Shape" -> "Shape"
+                                className == "androidx.compose.ui.graphics.painter.Painter" -> "Painter"
+                                className == "androidx.compose.ui.graphics.vector.ImageVector" -> "ImageVector"
+                                className == "androidx.compose.ui.Alignment" -> "Alignment"
+                                className == "androidx.compose.ui.unit.TextUnit" -> "TextUnit"
+                                className == "androidx.compose.ui.text.TextStyle" -> "TextStyle"
+                                className == "androidx.compose.foundation.layout.Arrangement" -> "Arrangement"
+                                className == "androidx.compose.foundation.layout.PaddingValues" -> "PaddingValues"
+                                className == "androidx.compose.foundation.gestures.Orientation" -> "Orientation"
+                                className == "androidx.compose.ui.window.DialogProperties" -> "DialogProperties"
+                                className == "androidx.compose.foundation.interaction.MutableInteractionSource" -> "MutableInteractionSource"
+                                className == "androidx.compose.foundation.Indication" -> "Indication"
+                                className == "androidx.compose.material3.ButtonColors" -> "ButtonColors"
+                                className == "androidx.compose.material3.ButtonElevation" -> "ButtonElevation"
+                                className == "androidx.compose.material3.CardColors" -> "CardColors"
+                                className == "androidx.compose.material3.CardElevation" -> "CardElevation"
+                                className == "androidx.compose.material3.TextFieldColors" -> "TextFieldColors"
+                                className == "androidx.compose.material3.TopAppBarColors" -> "TopAppBarColors"
+                                className == "androidx.compose.material3.NavigationBarItemColors" -> "NavigationBarItemColors"
+                                className.contains("Function0") -> "() -> Unit"
+                                className.contains("Function1") -> "(Any) -> Unit"
+                                className.contains("Function2") -> "(Any, Any) -> Unit"
+                                className.contains("ColumnScope") -> "ColumnScope.() -> Unit"
+                                className.contains("RowScope") -> "RowScope.() -> Unit"
+                                className.contains("BoxScope") -> "BoxScope.() -> Unit"
+                                className.contains("LazyListScope") -> "LazyListScope.() -> Unit"
+                                className.contains("LazyGridScope") -> "LazyGridScope.() -> Unit"
+                                className.contains("DrawerState") -> "DrawerState"
+                                className.contains("SnackbarHostState") -> "SnackbarHostState"
+                                else -> className.substringAfterLast(".")
+                            }
+                        } else {
+                            descriptor
+                        }
+                    }
+                }
+            }
+
+            private fun inferComposableDefaultValue(
+                functionName: String,
+                kmParam: KmValueParameter?,
+                typeName: String
+            ): String? {
+                val paramName = kmParam?.name ?: return null
+
+                return when {
+                    typeName == "Modifier" -> "Modifier"
+                    typeName == "Dp" && paramName == "elevation" -> "0.dp"
+                    typeName == "Shape" -> "RectangleShape"
+                    typeName == "Boolean" && paramName in listOf("enabled", "checked") -> "true"
+                    typeName.contains("Scope.() -> Unit") -> "{}"
+                    typeName == "() -> Unit" -> "{}"
+                    typeName == "(Any) -> Unit" -> "{}"
+                    typeName == "PaddingValues" -> "PaddingValues()"
+                    typeName == "MutableInteractionSource" -> "null"
+                    typeName == "Indication" -> "null"
+                    else -> null
+                }
+            }
+
+            private fun generateComposableParamName(functionName: String, paramIndex: Int, paramType: String): String {
+                return when (paramType) {
+                    "Modifier" -> "modifier"
+                    "Dp" -> "size"
+                    "Color" -> "color"
+                    "Float" -> "value"
+                    "Int" -> "value"
+                    "Boolean" -> "enabled"
+                    "String" -> "text"
+                    "Shape" -> "shape"
+                    "TextStyle" -> "style"
+                    "Arrangement" -> "arrangement"
+                    "Alignment" -> "alignment"
+                    "PaddingValues" -> "contentPadding"
+                    "Painter" -> "painter"
+                    "ImageVector" -> "imageVector"
+                    "() -> Unit" -> "onClick"
+                    "ColumnScope.() -> Unit", "RowScope.() -> Unit", "BoxScope.() -> Unit" -> "content"
+                    "LazyListScope.() -> Unit", "LazyGridScope.() -> Unit" -> "content"
+                    else -> "param$paramIndex"
+                }
+            }
+        }
     }
 
     /**
