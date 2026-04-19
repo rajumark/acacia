@@ -228,6 +228,6 @@ class KotlinMetadataParser(private val project: Project) {
 }
 
 // Extension function to check if function has an annotation
-private fun KmFunction.hasAnnotation(name: String): Boolean {
-    return this.annotations.any { it.className.contains(name) }
+private fun kotlinx.metadata.KmFunction.hasAnnotation(name: String): Boolean {
+    return this.annotations.any { annotation -> annotation.className.contains(name) }
 }

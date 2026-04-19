@@ -2,21 +2,22 @@ package com.acacia
 
 import com.acacia.generator.KotlinGenerator
 import com.acacia.model.ModifierFunction
-import com.acacia.resolver.DependencyResolver
-import com.acacia.resolver.AarExtractor
 import com.acacia.parser.HybridModifierParser
 import com.acacia.cache.CacheManager
 import com.acacia.documentation.AiDocumentationGenerator
 import com.acacia.documentation.AiTrainingDataGenerator
 import org.gradle.api.DefaultTask
+import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.provider.Property
-import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.OutputDirectory
-import org.gradle.api.tasks.TaskAction
-import org.gradle.api.tasks.CacheableTask
+import org.gradle.api.tasks.*
 import java.io.File
 
+/**
+ * Generates short DSL functions for Compose Modifiers.
+ * 
+ * Supports incremental builds: only re-parses JARs that changed.
+ */
 @CacheableTask
 open class GenerateDslTask : DefaultTask() {
     @get:Input
@@ -24,6 +25,13 @@ open class GenerateDslTask : DefaultTask() {
 
     @get:Input
     val debug: Property<Boolean> = project.objects.property(Boolean::class.java)
+    
+    /**
+     * The input JAR files to parse for Modifier functions.
+     * Using @Classpath for efficient change detection.
+     */
+    @get:Classpath
+    val inputJars: ConfigurableFileCollection = project.objects.fileCollection()
 
     @get:OutputDirectory
     val outputDir: DirectoryProperty = project.objects.directoryProperty().convention(
@@ -31,11 +39,18 @@ open class GenerateDslTask : DefaultTask() {
     )
 
     @TaskAction
-    fun generate() {
+    fun generate(inputs: IncrementalTaskInputs) {
         println("Shortify: Starting DSL generation task")
         if (!enabled.getOrElse(true)) {
             project.logger.lifecycle("Shortify: Plugin disabled")
             return
+        }
+        
+        // Log incremental status
+        if (inputs.isIncremental) {
+            project.logger.lifecycle("Shortify: Running incremental build")
+        } else {
+            project.logger.lifecycle("Shortify: Running full build (no incremental data)")
         }
         
         val isDebug = debug.getOrElse(false)
@@ -64,6 +79,7 @@ open class GenerateDslTask : DefaultTask() {
     
     /**
      * Executes the complete pipeline with error handling at each stage.
+     * Uses inputJars for incremental build support - only changed JARs trigger re-parsing.
      */
     private fun executePipelineWithFallbacks(isDebug: Boolean): List<ModifierFunction> {
         val cacheManager = CacheManager(project)
@@ -75,34 +91,22 @@ open class GenerateDslTask : DefaultTask() {
             return cachedFunctions
         }
         
-        // Stage 1: Dependency Resolution
-        val jarFiles = try {
-            val resolver = DependencyResolver(project)
-            val composeArtifacts = resolver.getComposeDependencies()
-            
-            if (isDebug) {
-                composeArtifacts.forEach { artifact ->
-                    project.logger.debug("Shortify: - ${artifact.group}:${artifact.name}:${artifact.version}")
-                }
+        // Stage 1: Get input JARs (configured by plugin from compile classpath)
+        // These are tracked as @Classpath inputs for incremental builds
+        val jarFiles = inputJars.files.filter { it.exists() && it.isFile && it.extension == "jar" }
+        
+        if (jarFiles.isEmpty()) {
+            project.logger.warn("Shortify: No Compose JAR files found in input. Skipping generation.")
+            project.logger.info("Shortify: Ensure Compose dependencies are added to your project.")
+            return emptyList()
+        }
+        
+        project.logger.lifecycle("Shortify: Found ${jarFiles.size} JAR files to parse (incremental: only changed JARs will be re-parsed)")
+        
+        if (isDebug) {
+            jarFiles.forEach { jar ->
+                project.logger.debug("Shortify: Input JAR: ${jar.name} (${jar.absolutePath})")
             }
-            
-            val extractor = AarExtractor(project)
-            val jars = extractor.extractJars(composeArtifacts)
-            
-            project.logger.lifecycle("Shortify: Found ${composeArtifacts.size} Compose artifacts, extracted ${jars.size} jar files")
-            if (isDebug) {
-                composeArtifacts.forEach { artifact ->
-                    project.logger.debug("Shortify: Artifact: ${artifact.group}:${artifact.name}:${artifact.version} (${artifact.file.extension})")
-                }
-                jars.forEach { jar ->
-                    project.logger.debug("Shortify: Jar: ${jar.name} (${jar.absolutePath})")
-                }
-            }
-            jars
-            
-        } catch (e: Exception) {
-            project.logger.warn("Shortify: Dependency resolution failed: ${e.message}")
-            emptyList()
         }
         
         // Stage 2: Cross-platform API Parsing with ASM
