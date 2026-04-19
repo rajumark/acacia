@@ -4,9 +4,8 @@ import com.acacia.generator.KotlinGenerator
 import com.acacia.model.ModifierFunction
 import com.acacia.resolver.DependencyResolver
 import com.acacia.resolver.AarExtractor
-import com.acacia.parser.AsmModifierParser
+import com.acacia.parser.HybridModifierParser
 import com.acacia.cache.CacheManager
-import com.acacia.platform.PlatformModifierDiscovery
 import com.acacia.documentation.AiDocumentationGenerator
 import com.acacia.documentation.AiTrainingDataGenerator
 import org.gradle.api.DefaultTask
@@ -112,11 +111,11 @@ open class GenerateDslTask : DefaultTask() {
                 project.logger.warn("Shortify: No jar files to parse")
                 emptyList()
             } else {
-                val parser = AsmModifierParser(project)
+                val parser = HybridModifierParser(project)
                 val functions = parser.parseModifierFunctions(jarFiles)
                 
                 // Always log the count - this is critical for debugging
-                project.logger.lifecycle("Shortify: Discovered ${functions.size} Modifier functions from Compose jars")
+                project.logger.lifecycle("Shortify: Discovered ${functions.size} Modifier functions from Compose jars (with default values)")
                 
                 if (isDebug) {
                     functions.sortedBy { it.name }.forEach { function ->
