@@ -5,13 +5,12 @@ import com.acacia.model.ModifierFunction
 import com.acacia.resolver.DependencyResolver
 import com.acacia.resolver.AarExtractor
 import com.acacia.parser.AsmModifierParser
-import com.acacia.mapping.NamingEngine
 import com.acacia.cache.CacheManager
 import com.acacia.platform.PlatformModifierDiscovery
-import com.acacia.platform.PlatformCodeGenerator
 import com.acacia.documentation.AiDocumentationGenerator
 import com.acacia.documentation.AiTrainingDataGenerator
 import org.gradle.api.DefaultTask
+import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.OutputDirectory
@@ -23,15 +22,14 @@ import java.io.File
 open class GenerateDslTask : DefaultTask() {
     @get:Input
     val enabled: Property<Boolean> = project.objects.property(Boolean::class.java)
-    
+
     @get:Input
     val debug: Property<Boolean> = project.objects.property(Boolean::class.java)
-    
+
     @get:OutputDirectory
-    val outputDir: File = project.layout.buildDirectory
-        .dir("generated/source/shortify")
-        .get()
-        .asFile
+    val outputDir: DirectoryProperty = project.objects.directoryProperty().convention(
+        project.layout.buildDirectory.dir("generated/source/shortify")
+    )
 
     @TaskAction
     fun generate() {
@@ -180,7 +178,7 @@ open class GenerateDslTask : DefaultTask() {
                 project.logger.lifecycle("Shortify: Generating ${functions.size} functions with HybridNamingEngine")
             }
             
-            val generatedFile = generator.generateShortModifiers(functions, outputDir)
+            val generatedFile = generator.generateShortModifiers(functions, outputDir.get().asFile)
             
             // Log naming statistics (always show for visibility)
             val stats = generator.getNamingStatistics()

@@ -14,16 +14,8 @@ android {
         versionCode = 1
         versionName = "1.0.0"
     }
-    
-    android {
-    sourceSets {
-        named("main") {
-            java {
-                srcDir(layout.buildDirectory.dir("generated/source/shortify"))
-            }
-        }
-    }
-}
+    // Note: Generated sources are automatically registered by the Acacia plugin
+    // via the Android Variant API - no manual sourceSets configuration needed
 }
 
 kotlin {
