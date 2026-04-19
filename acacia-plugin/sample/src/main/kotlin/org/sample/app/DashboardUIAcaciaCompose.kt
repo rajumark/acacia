@@ -34,9 +34,9 @@ fun DashboardUIAcaciaCompose() {
     
     Column(
         modifier = Modifier
-            .fmw().fmh()
-            .bg(Color(0xFFF5F5F5))
-            .p(16.dp)
+            .mw().mh()
+            .brd(Color(0xFFF5F5F5))
+            .padg(16.dp)
     ) {
         // Header Section
         AcaciaHeaderSection()
