@@ -180,15 +180,13 @@ open class GenerateDslTask : DefaultTask() {
             
             val generatedFile = generator.generateShortModifiers(functions, outputDir)
             
-            // Log naming statistics in debug mode
-            if (isDebug) {
-                val stats = generator.getNamingStatistics()
-                project.logger.lifecycle("Shortify: Naming Statistics - " +
-                    "Total: ${stats.totalGenerated}, " +
-                    "Golden: ${stats.goldenNames}, " +
-                    "Algorithmic: ${stats.algorithmicNames}, " +
-                    "Collisions Resolved: ${stats.collisionsResolved}")
-            }
+            // Log naming statistics (always show for visibility)
+            val stats = generator.getNamingStatistics()
+            project.logger.lifecycle("Shortify: Naming Statistics - " +
+                "Total: ${stats.totalGenerated}, " +
+                "Golden: ${stats.goldenNames}, " +
+                "Algorithmic: ${stats.algorithmicNames}, " +
+                "Collisions: ${stats.collisionsResolved}")
             
             generatedFile
             
