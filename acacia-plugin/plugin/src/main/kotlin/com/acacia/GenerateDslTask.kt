@@ -229,48 +229,100 @@ open class GenerateDslTask : DefaultTask() {
      */
     private fun generateNameMappings(functions: List<ModifierFunction>): Map<String, String> {
         val mappings = mutableMapOf<String, String>()
+        val usedNames = mutableSetOf<String>()
         
         functions.forEach { function ->
-            val shortName = when (function.name) {
-                "padding" -> "p"
-                "background" -> "bg"
-                "fillMaxWidth" -> "fmw"
-                "fillMaxHeight" -> "fmh"
-                "fillMaxSize" -> "fms"
-                "paddingHorizontal" -> "ph"
-                "paddingVertical" -> "pv"
-                "paddingStart" -> "ps"
-                "paddingTop" -> "pt"
-                "paddingEnd" -> "pe"
-                "paddingBottom" -> "pb"
-                "width" -> "w"
-                "height" -> "h"
-                "size" -> "s"
-                "wrapContentWidth" -> "wcw"
-                "wrapContentHeight" -> "wch"
-                "wrapContentSize" -> "wcs"
-                "border" -> "bd"
-                "clip" -> "cl"
-                "shadow" -> "sh"
-                "offset" -> "of"
-                "rotate" -> "rt"
-                "scale" -> "sc"
-                "alpha" -> "al"
-                "clickable" -> "ck"
-                "pointerInput" -> "pi"
-                else -> {
-                    // Generate abbreviation for unknown functions
-                    if (function.name.length <= 3) {
-                        function.name
-                    } else {
-                        // Take first character and last character
-                        function.name.first().toString() + function.name.last().toString()
-                    }
-                }
-            }
+            val shortName = generateDynamicShortName(function.name, usedNames)
             mappings[function.name] = shortName
+            usedNames.add(shortName)
         }
         
         return mappings
+    }
+    
+    /**
+     * Generates 100% dynamic short names without any hardcoded mappings.
+     */
+    private fun generateDynamicShortName(originalName: String, usedNames: Set<String>): String {
+        // Rule 1: Very short names (1-3 chars) keep as-is
+        if (originalName.length <= 3) {
+            return originalName
+        }
+        
+        // Rule 2: Generate base name using smart abbreviation
+        val baseName = generateSmartAbbreviation(originalName)
+        
+        // Rule 3: Handle collisions
+        if (!usedNames.contains(baseName)) {
+            return baseName
+        }
+        
+        // Rule 4: Generate collision-free alternatives
+        return generateCollisionFreeName(originalName, baseName, usedNames)
+    }
+    
+    /**
+     * Smart abbreviation algorithm without hardcoded rules.
+     */
+    private fun generateSmartAbbreviation(name: String): String {
+        // Strategy 1: CamelCase abbreviation
+        if (name.any { it.isUpperCase() }) {
+            val camelCaseAbbrev = name.filter { it.isUpperCase() }.lowercase()
+            if (camelCaseAbbrev.length >= 2 && camelCaseAbbrev.length <= 4) {
+                return camelCaseAbbrev
+            }
+        }
+        
+        // Strategy 2: Word-based abbreviation
+        val words = name.split("(?=[A-Z])|[_-]".toRegex()).filter { it.isNotEmpty() }
+        return when {
+            words.size == 1 -> {
+                // Single word: use first-middle-last pattern
+                val word = words[0]
+                when {
+                    word.length <= 4 -> word.lowercase()
+                    word.length <= 6 -> word.take(2).lowercase() + word.takeLast(2).lowercase()
+                    else -> word.first().lowercase() + word.drop(1).dropLast(1).take(2).lowercase() + word.last().lowercase()
+                }
+            }
+            words.size == 2 -> {
+                // Two words: first letters + middle of second
+                words[0].first().lowercase() + words[1].take(2).lowercase()
+            }
+            words.size >= 3 -> {
+                // Multiple words: first letters of first 3 words
+                words.take(3).joinToString("") { it.first().lowercase() }
+            }
+            else -> {
+                // Fallback: first + last
+                name.first().lowercase() + name.last().lowercase()
+            }
+        }
+    }
+    
+    /**
+     * Generates collision-free names with suffixes.
+     */
+    private fun generateCollisionFreeName(originalName: String, baseName: String, usedNames: Set<String>): String {
+        // Try numeric suffixes
+        for (i in 2..9) {
+            val candidate = "$baseName$i"
+            if (!usedNames.contains(candidate)) {
+                return candidate
+            }
+        }
+        
+        // Try letter suffixes
+        val suffixes = listOf("a", "b", "c", "x", "v", "alt")
+        for (suffix in suffixes) {
+            val candidate = "$baseName$suffix"
+            if (!usedNames.contains(candidate)) {
+                return candidate
+            }
+        }
+        
+        // Last resort: hash suffix
+        val hash = originalName.takeLast(3).hashCode().toString(36).take(3).uppercase()
+        return "$baseName$hash"
     }
 }
