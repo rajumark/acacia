@@ -55,7 +55,18 @@ body::before{
   margin-bottom:var(--space-xl);
 }
 
-.logo{font-weight:600}
+.logo{
+  font-weight:600;
+  display:flex;
+  align-items:center;
+  gap:var(--space-sm);
+}
+
+.logo svg{
+  width:32px;
+  height:32px;
+  fill:var(--accent-green);
+}
 
 .nav a{
   color:var(--muted);
@@ -74,6 +85,33 @@ body::before{
 .hero h1{
   font-size:3rem;
   line-height:1.1;
+  min-height:3.3rem;
+}
+
+.rotating-text{
+  display:inline-block;
+  position:relative;
+}
+
+.rotating-text .text{
+  position:absolute;
+  left:0;
+  top:0;
+  opacity:0;
+  transform:translateY(20px);
+  transition:opacity 0.3s ease,transform 0.3s ease;
+  white-space:nowrap;
+}
+
+.rotating-text .text.active{
+  opacity:1;
+  transform:translateY(0);
+  position:relative;
+}
+
+.rotating-text .text.exit{
+  opacity:0;
+  transform:translateY(-20px);
 }
 
 .hero h1 span{
@@ -190,14 +228,32 @@ body::before{
 <div class="container">
 
   <div class="nav">
-    <div class="logo">Acacia</div>
+    <div class="logo">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2C12 2 2 7 2 12C2 16 6 20 12 20C18 20 22 16 22 12C22 7 12 2 12 2ZM12 4C12 4 20 8 20 12C20 15 17 18 12 18C7 18 4 15 4 12C4 8 12 4 12 4ZM12 6C12 6 8 8 8 11C8 13 10 15 12 15C14 15 16 13 16 11C16 8 12 6 12 6ZM12 8C12 8 14 9 14 11C14 12 13 13 12 13C11 13 10 12 10 11C10 9 12 8 12 8Z"/>
+        <path d="M12 8L11 10L12 12L13 10L12 8Z" fill-opacity="0.8"/>
+        <path d="M12 2L11 3L12 4L13 3L12 2Z" fill-opacity="0.6"/>
+        <path d="M12 20L11 21L12 22L13 21L12 20Z" fill-opacity="0.6"/>
+      </svg>
+      Acacia
+    </div>
     <div>
       <a href="#">GitHub</a>
     </div>
   </div>
 
   <section class="hero">
-    <h1>Write UI at the <span>speed of thought</span>.</h1>
+    <h1>
+      <span class="rotating-text">
+        <span class="text active">Less typing. Same result.</span>
+        <span class="text">Your compiler won't notice. Your AI will.</span>
+        <span class="text">100% Same Compose. Just less of it.</span>
+        <span class="text">Compose, but without the ceremony.</span>
+        <span class="text">If it feels shorter, it is.</span>
+        <span class="text">Stop writing what the compiler already knows.</span>
+        <span class="text">It's still Compose. Just... calmer</span>
+      </span>
+    </h1>
     <p>Acacia is an AI-native Compose DSL that removes repetition and lets you build interfaces with clarity.</p>
   </section>
 
@@ -276,6 +332,27 @@ function copyCode(btn) {
     }, 1500);
   });
 }
+
+// Rotating headline functionality
+const rotatingTexts = document.querySelectorAll('.rotating-text .text');
+let currentIndex = 0;
+
+function rotateText() {
+  const current = rotatingTexts[currentIndex];
+  current.classList.remove('active');
+  current.classList.add('exit');
+
+  currentIndex = (currentIndex + 1) % rotatingTexts.length;
+  const next = rotatingTexts[currentIndex];
+  next.classList.remove('exit');
+  next.classList.add('active');
+
+  setTimeout(() => {
+    current.classList.remove('exit');
+  }, 300);
+}
+
+setInterval(rotateText, 4000);
 </script>
 
 </body>
