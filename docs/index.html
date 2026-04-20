@@ -15,74 +15,518 @@
         }
         
         body {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: #ffffff;
             color: #1a1a1a;
             line-height: 1.6;
             min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        
+        body.dark {
+            background: #1a1a1a;
+            color: #ffffff;
         }
         
         .container {
-            max-width: 800px;
-            padding: 2rem;
-            text-align: center;
+            max-width: 1600px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: row;
         }
         
-        h1 {
-            font-size: 2.5rem;
-            font-weight: 600;
+        .sidebar {
+            width: 280px;
+            background: #f8f9fa;
+            border-right: 1px solid #e1e4e8;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        body.dark .sidebar {
+            background: #2d2d2d;
+            border-color: #404040;
+        }
+        
+        .logo-section {
+            padding: 2rem 1.5rem;
+            border-bottom: 1px solid #e1e4e8;
+        }
+        
+        body.dark .logo-section {
+            border-color: #404040;
+        }
+        
+        .logo {
+            width: 48px;
+            height: 48px;
             margin-bottom: 1rem;
+        }
+        
+        .logo svg {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .project-title {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
             color: #000;
+            margin: 0;
+            transition: color 0.3s ease;
+        }
+        
+        body.dark .project-title {
+            color: #ffffff;
         }
         
         .tagline {
-            font-size: 1.2rem;
-            color: #666;
-            margin-bottom: 2rem;
-        }
-        
-        .code-block {
-            background: #f8f9fa;
-            border: 1px solid #e1e4e8;
-            border-radius: 8px;
-            padding: 1.5rem;
-            margin: 2rem 0;
-            text-align: left;
-            font-family: 'JetBrains Mono', monospace;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             font-size: 0.9rem;
-            overflow-x: auto;
+            color: #666;
+            margin-top: 0.5rem;
+            transition: color 0.3s ease;
         }
         
-        .code-block code {
+        body.dark .tagline {
+            color: #cccccc;
+        }
+        
+        .tabs {
+            flex: 1;
+            padding: 1rem;
+        }
+        
+        .tab {
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            border-left: 4px solid transparent;
+            transition: background 0.3s ease;
+            color: #666;
             background: none;
             border: none;
-            padding: 0;
-            color: #1a1a1a;
+            font-size: 0.95rem;
         }
         
-        .sync-text {
+        .tab:hover {
+            color: #000;
+            background: rgba(0, 0, 0, 0.05);
+            border-left-color: #007acc;
+        }
+        
+        body.dark .tab:hover {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.1);
+            border-left-color: #58a6ff;
+        }
+        
+        .tab.active {
+            color: #000;
+            background: rgba(0, 122, 204, 0.1);
+            border-left-color: #007acc;
+            font-weight: 600;
+        }
+        
+        body.dark .tab.active {
+            color: #ffffff;
+            background: rgba(88, 166, 255, 0.1);
+            border-left-color: #58a6ff;
+        }
+        
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #ffffff;
+        }
+        
+        body.dark .main-content {
+            background: #1a1a1a;
+        }
+        
+        .header {
+            background: #f8f9fa;
+            border-bottom: 1px solid #e1e4e8;
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        body.dark .header {
+            background: #2d2d2d;
+            border-color: #404040;
+        }
+        
+        .title-section {
+            display: flex;
+            align-items: center;
+            flex: 1;
+        }
+        
+        h1 {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-size: 2rem;
+            font-weight: 600;
+            color: #000;
+            margin: 0;
+            transition: color 0.3s ease;
+        }
+        
+        body.dark h1 {
+            color: #ffffff;
+        }
+        
+        .file-header {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            background: #f1f3f4;
+            border-bottom: 1px solid #e1e4e8;
+            font-size: 0.85rem;
+            color: #666;
+        }
+        
+        body.dark .file-header {
+            background: #252525;
+            border-color: #404040;
+            color: #cccccc;
+        }
+        
+        .content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .editor {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #ffffff;
+            border: 1px solid #e1e4e8;
+            border-radius: 0 0 8px 8px;
+        }
+        
+        body.dark .editor {
+            background: #1e1e1e;
+            border-color: #404040;
+        }
+        
+        .code-editor {
+            flex: 1;
+            padding: 1rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            line-height: 1.5;
+            overflow: auto;
+            background: #fafafa;
+            color: #1a1a1a;
+            tab-size: 4;
+        }
+        
+        body.dark .code-editor {
+            background: #2d2d2d;
+            color: #ffffff;
+        }
+        
+        .line-numbers {
+            padding: 1rem 1rem 0 0;
+            color: #999;
+            user-select: none;
+            min-width: 3rem;
+            text-align: right;
+            border-right: 1px solid #e1e4e8;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        
+        body.dark .line-numbers {
+            color: #666;
+            border-color: #404040;
+        }
+        
+        .theme-toggle {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+        
+        .theme-toggle:hover {
+            background: rgba(0, 0, 0, 0.1);
+        }
+        
+        .theme-toggle svg {
+            width: 20px;
+            height: 20px;
+            fill: #666;
+            transition: fill 0.3s ease;
+        }
+        
+        body.dark .theme-toggle svg {
+            fill: #cccccc;
+        }
+        
+        /* Syntax highlighting */
+        .keyword { color: #d73a49; font-weight: 600; }
+        .string { color: #032f62; }
+        .function { color: #6f42c1; }
+        .comment { color: #6a737d; font-style: italic; }
+        .number { color: #005cc5; }
+        .operator { color: #d73a49; }
+        
+        body.dark .keyword { color: #f92672; }
+        body.dark .string { color: #a5d6ff; }
+        body.dark .function { color: #61dafb; }
+        body.dark .comment { color: #7c8a8d; }
+        body.dark .number { color: #79c0ff; }
+        body.dark .operator { color: #f92672; }
+        
+        .guide {
+            padding: 1rem;
+            background: #f8f9fa;
+            border-left: 4px solid #007acc;
+            margin: 1rem 0;
+        }
+        
+        body.dark .guide {
+            background: #252525;
+            border-color: #58a6ff;
+        }
+        
+        .guide h3 {
+            margin: 0 0 0.5rem 0;
+            color: #000;
+            font-size: 1rem;
+        }
+        
+        body.dark .guide h3 {
+            color: #ffffff;
+        }
+        
+        .guide p {
+            margin: 0.5rem 0;
+            color: #666;
             font-size: 0.9rem;
-            color: #888;
-            margin-top: 1rem;
-            font-style: italic;
+        }
+        
+        body.dark .guide p {
+            color: #cccccc;
+        }
+        
+        .guide code {
+            background: #f1f3f4;
+            padding: 0.2rem 0.4rem;
+            border-radius: 3px;
+            font-size: 0.85rem;
+        }
+        
+        body.dark .guide code {
+            background: #2d2d2d;
+        }
+        
+        body.dark .guide .container {
+            max-width: 100%;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .hero {
+            background: linear-gradient(135deg, #007acc 0%, #0056b3 100%);
+            color: #ffffff;
+            padding: 4rem 2rem;
+            text-align: center;
+            position: relative;
+        }
+        
+        .hero-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 3rem;
+        }
+        
+        .hero-text {
+            flex: 1;
+            text-align: left;
+        }
+        
+        .logo-hero {
+            width: 64px;
+            height: 64px;
+            margin-bottom: 1.5rem;
+        }
+        
+        .logo-hero svg {
+            width: 100%;
+            height: 100%;
+            fill: #ffffff;
+        }
+        
+        .hero h1 {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-size: 3rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin: 0 0 1rem 0;
+            line-height: 1.2;
+        }
+        
+        .hero p {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-size: 1.2rem;
+            color: #ffffff;
+            margin: 0;
+            opacity: 0.9;
+        }
+        
+        .theme-toggle-hero {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .theme-toggle-hero:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .theme-toggle-hero svg {
+            width: 24px;
+            height: 24px;
+            fill: #ffffff;
+            transition: fill 0.3s ease;
+        }
+        
+        .tabs {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .tab {
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        
+        .tab.active {
+            background: #007acc;
+            color: #ffffff;
+        }
+        
+        body.dark .tab.active {
+            background: #58a6ff;
+        }
+        
+        .tab:hover {
+            background: rgba(0, 0, 0, 0.1);
+        }
+        
+        body.dark .tab:hover {
+            background: rgba(255, 255, 255, 0.1);
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Acacia</h1>
-        <p class="tagline">AI-Native Compose DSL</p>
-        
-        <div class="code-block">
-            <code>plugins {
-    id("io.github.rajumark.acacia") version "0.1.0"
-}</code>
+        <div class="hero">
+            <div class="hero-content">
+                <div class="logo-hero">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 2L2 7v10c0 1.1.9 2 2h7v2H4c-.6 0-1-.4-1-1V8c0-.6.4-1 1-1h7V2zm0 0l8 5v10c0 .6-.4 1-1 1h-7v2h7c.6 0 1-.4 1-1V8c0-.6-.4-1-1-1h-7V2z"/>
+                        <path d="M12 2v20M8 6h8M8 10h8M8 14h8"/>
+                        <circle cx="12" cy="8" r="1"/>
+                        <circle cx="12" cy="12" r="1"/>
+                        <circle cx="12" cy="16" r="1"/>
+                    </svg>
+                </div>
+                <div class="hero-text">
+                    <h1>Acacia</h1>
+                    <p>AI-Native Compose DSL</p>
+                </div>
+                <button class="theme-toggle-hero" onclick="toggleTheme()" aria-label="Toggle theme">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"/>
+                        <line x1="12" y1="1" x2="12" y2="3"/>
+                        <line x1="12" y1="21" x2="12" y2="23"/>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                        <line x1="1" y1="12" x2="3" y2="12"/>
+                        <line x1="21" y1="12" x2="23" y2="12"/>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                    </svg>
+                </button>
+            </div>
         </div>
         
-        <p class="sync-text">Transform verbose Compose code into concise, AI-friendly DSL</p>
+        <div class="main-content">
+            <div class="editor">
+                <div class="file-header">
+                    <span>build.gradle.kts</span>
+                </div>
+                <div style="display: flex; flex: 1;">
+                    <div class="line-numbers">1<br>2<br>3<br>4<br>5<br>6<br>7<br>8</div>
+                    <div class="code-editor" id="code-content"><span class="keyword">plugins</span> {<br>    <span class="keyword">id</span>(<span class="string">"io.github.rajumark.acacia"</span>) <span class="keyword">version</span> <span class="string">"0.1.0"</span><br>}</div>
+                </div>
+            </div>
+            
+            <div class="guide" id="android-guide">
+                <h3>Android Project Setup</h3>
+                <p>Add the Acacia plugin to your app-level <code>build.gradle.kts</code>:</p>
+                <p>Sync your project and start using short modifiers like <code>Modifier.p(16).bg(Color.Blue).fmw()</code></p>
+            </div>
+            
+            <div class="guide" id="kotlin-guide" style="display: none;">
+                <h3>Kotlin Multiplatform Setup</h3>
+                <p>Add the Acacia plugin to your shared module's <code>build.gradle.kts</code>:</p>
+                <p>Configure DSL generation for each target platform as needed.</p>
+            </div>
+        </div>
     </div>
+    
+    <script>
+        // Check for saved theme preference or default to light
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.body.classList.add('dark');
+        }
+        
+        function toggleTheme() {
+            const body = document.body;
+            body.classList.toggle('dark');
+            const isDark = body.classList.contains('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        }
+        
+        function showTab(tab) {
+            // Update tab states
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelector(`.tab[onclick="showTab('${tab}')"]`).classList.add('active');
+            
+            // Update guide visibility
+            document.getElementById('android-guide').style.display = tab === 'android' ? 'block' : 'none';
+            document.getElementById('kotlin-guide').style.display = tab === 'kotlin' ? 'block' : 'none';
+            
+            // Update code content
+            const codeContent = document.getElementById('code-content');
+            if (tab === 'android') {
+                codeContent.innerHTML = '<span class="keyword">plugins</span> {<br>    <span class="keyword">id</span>(<span class="string">"io.github.rajumark.acacia"</span>) <span class="keyword">version</span> <span class="string">"0.1.0"</span><br>}';
+            } else {
+                codeContent.innerHTML = '<span class="keyword">plugins</span> {<br>    <span class="keyword">id</span>(<span class="string">"io.github.rajumark.acacia"</span>) <span class="keyword">version</span> <span class="string">"0.1.0"</span><br>}';
+            }
+        }
+    </script>
 </body>
 </html>
