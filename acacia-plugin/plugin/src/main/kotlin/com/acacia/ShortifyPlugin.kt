@@ -36,10 +36,17 @@ class ShortifyPlugin : Plugin<Project> {
                 // Configure input JARs from the variant's compile classpath for incremental builds
                 variant.compileClasspath?.let { classpath ->
                     generateTask.configure { task ->
-                        // Filter to only include Compose-related JARs
+                        // Fast filter: include all Compose-related JARs with minimal string operations
                         task.inputJars.from(classpath.filter { file ->
-                            file.name.contains("compose") ||
-                            file.name.startsWith("androidx.compose")
+                            val name = file.name
+                            // Quick checks - avoid .lowercase() overhead
+                            name.contains("compose") || 
+                            name.startsWith("androidx.compose") ||
+                            name.startsWith("ui-") ||
+                            name.contains("foundation") ||
+                            name.contains("material") ||
+                            name.startsWith("runtime") ||
+                            name.contains("animation")
                         })
                     }
                 }
@@ -57,12 +64,18 @@ class ShortifyPlugin : Plugin<Project> {
             target.configurations.findByName("compileClasspath")?.let { config ->
                 generateTask.configure { task ->
                     task.inputJars.from(config.filter { file ->
-                        file.name.contains("compose") ||
-                        file.name.startsWith("androidx.compose")
+                        val name = file.name.lowercase()
+                        name.contains("compose") ||
+                        name.startsWith("androidx.compose") ||
+                        name.contains("ui-") ||
+                        name.contains("foundation") ||
+                        name.contains("material") ||
+                        name.contains("runtime") ||
+                        name.contains("animation")
                     })
                 }
             }
-            
+
             target.logger.info("Shortify: Android Components extension not found. Skipping automatic source registration.")
             target.logger.info("Shortify: For non-Android projects, manually add the generated directory to your source sets.")
         }

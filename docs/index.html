@@ -3,8 +3,20 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Acacia is an AI-native Compose DSL that removes repetition and lets you build interfaces with clarity. Write UI at the speed of thought.">
+<meta name="keywords" content="Compose, Kotlin, Android, DSL, UI, Jetpack Compose, AI, code generation">
+<meta property="og:title" content="Acacia — AI-Native Compose DSL">
+<meta property="og:description" content="Write UI at the speed of thought. Acacia removes repetition and lets you build interfaces with clarity.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://rajumark.github.io/acacia/">
+<meta property="og:image" content="https://rajumark.github.io/acacia/favicon.svg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Acacia — AI-Native Compose DSL">
+<meta name="twitter:description" content="Write UI at the speed of thought.">
+<meta name="twitter:image" content="https://rajumark.github.io/acacia/favicon.svg">
 <title>Acacia — AI-Native Compose DSL</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
 
 <style>
 :root{
@@ -13,6 +25,12 @@
   --muted:#7d8590;
   --accent-blue:#4285F4;
   --accent-green:#34D399;
+
+  /* light mode */
+  --light-bg:#ffffff;
+  --light-text:#1f2937;
+  --light-muted:#6b7280;
+  --light-border:#e5e7eb;
 
   /* spacing system */
   --space-xs:4px;
@@ -29,8 +47,18 @@ body{
   background:
     radial-gradient(circle at 20% 10%, rgba(66,133,244,0.12), transparent 40%),
     radial-gradient(circle at 80% 0%, rgba(52,211,153,0.08), transparent 40%),
-    #040608;
+    var(--bg);
   color:var(--text);
+  transition:background 0.3s ease, color 0.3s ease;
+}
+
+body.light{
+  background:var(--light-bg);
+  color:var(--light-text);
+}
+
+body.light::before{
+  background-image: linear-gradient(rgba(0,0,0,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.03) 1px, transparent 1px);
 }
 
 .container{
@@ -53,6 +81,47 @@ body::before{
   justify-content:space-between;
   align-items:center;
   margin-bottom:var(--space-xl);
+  position:relative;
+}
+
+.mobile-menu-btn{
+  display:none;
+  background:none;
+  border:none;
+  color:var(--text);
+  font-size:1.5rem;
+  cursor:pointer;
+  padding:var(--space-xs);
+}
+
+.nav-links{
+  display:flex;
+  align-items:center;
+  gap:var(--space-md);
+}
+
+@media(max-width:768px){
+  .mobile-menu-btn{
+    display:block;
+  }
+  .nav-links{
+    display:none;
+    position:absolute;
+    top:100%;
+    right:0;
+    background:var(--bg);
+    border:1px solid rgba(255,255,255,0.1);
+    border-radius:8px;
+    padding:var(--space-md);
+    flex-direction:column;
+    gap:var(--space-sm);
+    margin-top:var(--space-xs);
+    z-index:1000;
+  }
+  .nav-links.active{
+    display:flex;
+  }
+  .code-row{grid-template-columns:1fr}
 }
 
 .logo{
@@ -78,6 +147,24 @@ body::before{
 
 .nav a:hover{
   color:var(--text);
+}
+
+.theme-toggle{
+  background:none;
+  border:none;
+  color:var(--text);
+  font-size:1.2rem;
+  cursor:pointer;
+  padding:var(--space-xs);
+  transition:color 0.2s;
+}
+
+.theme-toggle:hover{
+  color:var(--accent-green);
+}
+
+body.light .theme-toggle:hover{
+  color:var(--accent-blue);
 }
 
 .hero{max-width:720px}
@@ -213,6 +300,53 @@ body::before{
   margin-top:var(--space-xl);
 }
 
+.share-buttons{
+  display:flex;
+  gap:var(--space-sm);
+  margin-top:var(--space-md);
+}
+
+.share-btn{
+  display:inline-block;
+  padding:var(--space-sm) var(--space-md);
+  border-radius:6px;
+  text-decoration:none;
+  font-size:0.85rem;
+  font-weight:500;
+  transition:opacity 0.2s;
+}
+
+.share-btn.twitter{
+  background:#1DA1F2;
+  color:white;
+}
+
+.share-btn.linkedin{
+  background:#0077B5;
+  color:white;
+}
+
+.share-btn:hover{
+  opacity:0.9;
+}
+
+.footer-links{
+  display:flex;
+  gap:var(--space-md);
+  margin-bottom:var(--space-sm);
+}
+
+.footer-links a{
+  color:var(--muted);
+  text-decoration:none;
+  font-size:0.75rem;
+  transition:color 0.2s;
+}
+
+.footer-links a:hover{
+  color:var(--text);
+}
+
 .footer{
   margin-top:var(--space-lg);
   font-size:0.75rem;
@@ -238,8 +372,10 @@ body::before{
       </svg>
       Acacia
     </div>
-    <div>
-      <a href="#">GitHub</a>
+    <button class="mobile-menu-btn" onclick="toggleMenu()">☰</button>
+    <div class="nav-links">
+      <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">🌙</button>
+      <a href="https://github.com/rajumark/acacia">GitHub</a>
     </div>
   </div>
 
@@ -304,7 +440,22 @@ Modifier
     <p>Clean patterns make generation faster and more reliable.</p>
   </section>
 
+  <div class="divider"></div>
+
+  <section class="section">
+    <h2>Share Acacia</h2>
+    <div class="share-buttons">
+      <a href="https://twitter.com/intent/tweet?text=Write%20UI%20at%20the%20speed%20of%20thought%20with%20Acacia%20%E2%80%94%20AI-native%20Compose%20DSL&url=https://rajumark.github.io/acacia/" target="_blank" class="share-btn twitter">Share on X</a>
+      <a href="https://www.linkedin.com/sharing/share-offsite/?url=https://rajumark.github.io/acacia/" target="_blank" class="share-btn linkedin">Share on LinkedIn</a>
+    </div>
+  </section>
+
   <div class="footer">
+    <div class="footer-links">
+      <a href="https://github.com/rajumark/acacia/blob/main/CONTRIBUTING.md">Contributing</a>
+      <a href="https://github.com/rajumark/acacia/blob/main/LICENSE">License</a>
+      <a href="mailto:contact@acacia.dev">Contact</a>
+    </div>
     Acacia — clarity over complexity.
   </div>
 
@@ -354,6 +505,35 @@ function rotateText() {
 }
 
 setInterval(rotateText, 4000);
+
+// Theme toggle functionality
+function toggleTheme() {
+  const body = document.body;
+  const themeBtn = document.querySelector('.theme-toggle');
+  
+  if (body.classList.contains('light')) {
+    body.classList.remove('light');
+    themeBtn.textContent = '🌙';
+    localStorage.setItem('theme', 'dark');
+  } else {
+    body.classList.add('light');
+    themeBtn.textContent = '☀️';
+    localStorage.setItem('theme', 'light');
+  }
+}
+
+// Load saved theme
+const savedTheme = localStorage.getItem('theme');
+if (savedTheme === 'light') {
+  document.body.classList.add('light');
+  document.querySelector('.theme-toggle').textContent = '☀️';
+}
+
+// Mobile menu toggle
+function toggleMenu() {
+  const navLinks = document.querySelector('.nav-links');
+  navLinks.classList.toggle('active');
+}
 </script>
 
 </body>

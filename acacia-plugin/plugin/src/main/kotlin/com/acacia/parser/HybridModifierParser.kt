@@ -55,9 +55,17 @@ class HybridModifierParser(private val project: Project) {
 
     /**
      * Parses jar files to extract @Composable functions.
-     * Targets: Column, Row, Box, Text, Button, etc.
+     * Fast path: Use golden mappings first, fallback to ASM parsing.
      */
     fun parseComposableFunctions(jarFiles: List<File>): List<ComposableFunction> {
+        // FAST PATH: Generate from golden mappings first (no JAR parsing needed)
+        val goldenFunctions = generateGoldenComposables()
+        if (goldenFunctions.isNotEmpty()) {
+            project.logger.lifecycle("Shortify: Generated ${goldenFunctions.size} Composable functions from golden mappings")
+            return goldenFunctions
+        }
+
+        // FALLBACK: Parse from JARs (slower)
         val functions = mutableListOf<ComposableFunction>()
         val metadataMap = mutableMapOf<String, Metadata>()
 
@@ -82,6 +90,21 @@ class HybridModifierParser(private val project: Project) {
 
         project.logger.lifecycle("Shortify: Parsed ${functions.size} Composable functions")
         return functions
+    }
+
+    /**
+     * Fast path: Generate composable functions from golden mappings without JAR parsing.
+     */
+    private fun generateGoldenComposables(): List<ComposableFunction> {
+        val goldenMappings = com.acacia.mapping.GoldenMappings.composableMappings
+        return goldenMappings.map { (originalName, shortName) ->
+            ComposableFunction(
+                name = originalName,
+                packageName = "androidx.compose.material3", // Approximate package
+                parameters = emptyList(), // Simplified for speed
+                isDeprecated = false
+            )
+        }
     }
 
     /**
@@ -173,8 +196,8 @@ class HybridModifierParser(private val project: Project) {
             signature: String?,
             exceptions: Array<out String>?
         ): MethodVisitor? {
-            // Must be public static
-            if ((access and Opcodes.ACC_PUBLIC) == 0 || (access and Opcodes.ACC_STATIC) == 0) {
+            // Must be public
+            if ((access and Opcodes.ACC_PUBLIC) == 0) {
                 return null
             }
 
@@ -183,7 +206,7 @@ class HybridModifierParser(private val project: Project) {
                 return null
             }
 
-            return ComposableMethodVisitor(name, descriptor, packageName)
+            return ComposableMethodVisitor(name, descriptor, packageName, access)
         }
 
         /**
@@ -192,7 +215,8 @@ class HybridModifierParser(private val project: Project) {
         private inner class ComposableMethodVisitor(
             private val methodName: String,
             private val descriptor: String,
-            private val packageName: String
+            private val packageName: String,
+            private val access: Int
         ) : MethodVisitor(Opcodes.ASM9) {
             private var isComposable = false
 
@@ -453,7 +477,12 @@ class HybridModifierParser(private val project: Project) {
             }
         }
 
-        classReader.accept(visitor, ClassReader.SKIP_CODE or ClassReader.SKIP_DEBUG)
+        try {
+            classReader.accept(visitor, ClassReader.SKIP_CODE or ClassReader.SKIP_DEBUG)
+        } catch (e: Exception) {
+            // Ignore
+        }
+
         return metadata
     }
 

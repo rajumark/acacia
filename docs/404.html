@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>404 - Page Not Found | Acacia</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<style>
+:root{
+  --bg:#040608;
+  --text:#e6edf3;
+  --muted:#7d8590;
+  --accent-green:#34D399;
+  --space-xs:4px;
+  --space-sm:8px;
+  --space-md:16px;
+  --space-lg:24px;
+  --space-xl:32px;
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+
+body{
+  font-family:'Inter',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.container{
+  text-align:center;
+  max-width:600px;
+  padding:var(--space-lg);
+}
+
+.error-code{
+  font-size:8rem;
+  font-weight:700;
+  color:var(--accent-green);
+  line-height:1;
+  margin-bottom:var(--space-lg);
+}
+
+.error-title{
+  font-size:2rem;
+  font-weight:600;
+  margin-bottom:var(--space-md);
+}
+
+.error-message{
+  color:var(--muted);
+  margin-bottom:var(--space-xl);
+  line-height:1.6;
+}
+
+.btn{
+  display:inline-block;
+  background:var(--accent-green);
+  color:var(--bg);
+  text-decoration:none;
+  padding:var(--space-sm) var(--space-lg);
+  border-radius:6px;
+  font-weight:500;
+  transition:opacity 0.2s;
+}
+
+.btn:hover{
+  opacity:0.9;
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="error-code">404</div>
+  <h1 class="error-title">Page Not Found</h1>
+  <p class="error-message">
+    The page you're looking for doesn't exist or has been moved. 
+    Let's get you back to writing UI at the speed of thought.
+  </p>
+  <a href="/" class="btn">Back to Acacia</a>
+</div>
+</body>
+</html>
