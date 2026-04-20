@@ -97,7 +97,6 @@ body::before{
 
 .code-box{
   position:relative;
-  border:1px solid rgba(255,255,255,0.08);
   padding:8px;
   font-family:'JetBrains Mono', monospace;
   font-size:1.5rem;
@@ -205,14 +204,6 @@ body::before{
 
   <div class="code">
 
-    <div class="code-box">
-      <button class="copy-btn" onclick="copyCode(this)">Copy</button>
-      <div class="code-title">Gradle Plugin</div>
-<span class="keyword">plugins</span> {
-  <span class="keyword">id</span>(<span class="string">"io.github.rajumark.acacia"</span>)
-}
-    </div>
-
     <div class="code-row">
 
       <div class="code-box" style="opacity:0.6">
@@ -233,6 +224,14 @@ Modifier
   .<span class="func">fmw</span>()
       </div>
 
+    </div>
+
+    <div class="code-box">
+      <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      <div class="code-title">Gradle Plugin</div>
+<span class="keyword">plugins</span> {
+  <span class="keyword">id</span>(<span class="string">"io.github.rajumark.acacia"</span>)
+}
     </div>
 
   </div>
