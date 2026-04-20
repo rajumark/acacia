@@ -78,6 +78,38 @@ class HybridNamingEngine {
     }
 
     /**
+     * Generates algorithmic base name for composable functions.
+     * Uses consonant-based abbreviation with signature hints for uniqueness.
+     */
+    private fun generateComposableBaseName(function: ComposableFunction): String {
+        val name = function.name.removePrefix("Composable").removePrefix("Base")
+        
+        // Strategy 1: For camelCase names with 3+ words, take first letter of each word
+        val words = splitCamelCase(name)
+        if (words.size >= 3) {
+            return words.take(3).joinToString("") { it.first().lowercase() }
+        }
+        
+        // Strategy 2: For 2-word names, first char + next consonants
+        if (words.size == 2) {
+            val first = words[0].lowercase()
+            val second = words[1].lowercase()
+            return first.first().toString() + takeConsonants(second, 2)
+        }
+        
+        // Strategy 3: Single word - consonant-based
+        val lowerName = name.lowercase()
+        return when {
+            lowerName.length <= 4 -> lowerName
+            else -> {
+                // First char + key consonants + last char if meaningful
+                val consonants = takeConsonants(lowerName, 3)
+                lowerName.first().toString() + consonants
+            }
+        }
+    }
+
+    /**
      * Generates algorithmic base name from function name and signature.
      * Uses consonant-based abbreviation with signature hints for uniqueness.
      */

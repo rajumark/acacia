@@ -12,7 +12,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowInsetsControllerCompat
-import com.acacia.generated.*
+import com.acacia.generated.bg
+import com.acacia.generated.mw
+import com.acacia.generated.mh
+import com.acacia.generated.p
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

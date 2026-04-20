@@ -1,7 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.compose.compiler)
-    id("com.acacia")
+    id("io.github.rajumark.acacia")
 }
 
 android {

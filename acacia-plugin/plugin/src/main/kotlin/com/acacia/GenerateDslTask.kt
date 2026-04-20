@@ -9,6 +9,7 @@ import com.acacia.parser.HybridModifierParser
 import com.acacia.cache.CacheManager
 import com.acacia.documentation.AiDocumentationGenerator
 import com.acacia.documentation.AiTrainingDataGenerator
+import com.acacia.platform.PlatformModifierDiscovery
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.DirectoryProperty
@@ -42,18 +43,11 @@ open class GenerateDslTask : DefaultTask() {
     )
 
     @TaskAction
-    fun generate(inputs: IncrementalTaskInputs) {
+    fun generate() {
         println("Shortify: Starting DSL generation task")
         if (!enabled.getOrElse(true)) {
             project.logger.lifecycle("Shortify: Plugin disabled")
             return
-        }
-        
-        // Log incremental status
-        if (inputs.isIncremental) {
-            project.logger.lifecycle("Shortify: Running incremental build")
-        } else {
-            project.logger.lifecycle("Shortify: Running full build (no incremental data)")
         }
         
         val isDebug = debug.getOrElse(false)

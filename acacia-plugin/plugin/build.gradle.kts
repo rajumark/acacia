@@ -7,7 +7,7 @@ plugins {
 
 import org.gradle.plugin.compatibility.compatibility
 
-group = "com.acacia"
+group = "io.github.rajumark"
 version = libs.versions.sampleplugin.get()
 
 gradlePlugin {
@@ -15,8 +15,8 @@ gradlePlugin {
     vcsUrl.set("https://github.com/rajumark/acacia")
     plugins {
         create("plugin") {
-            id = "com.acacia"
-            displayName = "Acacia"
+            id = "io.github.rajumark.acacia"
+            displayName = "Acacia Compose DSL"
             description = "AI-Native Compose DSL Plugin - Transform verbose Compose code into concise, AI-friendly DSL"
             tags = listOf("compose", "dsl", "ai", "android", "jetpack-compose", "code-generation")
             implementationClass = "com.acacia.ShortifyPlugin"

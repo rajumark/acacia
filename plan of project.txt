@@ -337,14 +337,54 @@ col {
 
 ### Phase 4
 
-* Intermediate Representation (IR)
-* Multi-target generation
+* **Layout Parameters Shortification**
+  - `Arrangement.SpaceBetween` → `arr = sb`
+  - `Alignment.CenterHorizontally` → `align = ch`
+  - `PaddingValues.Absolute()` → `pad = abs()`
+
+* **Common Lambda Patterns**
+  - Pre-defined modifier chains
+  - `modifiers.fwp16b()` → `fillMaxWidth().padding(16.dp).background(Color.Blue)`
 
 ---
 
 ### Phase 5
 
-* Cross-platform support
+* **Material3 Components**
+  - `OutlinedTextField` → `OTF()`
+  - `ElevatedButton` → `EBtn()`
+  - `CircularProgressIndicator` → `CPI()`
+
+* **State Management**
+  - `mutableStateOf()` → `state()`
+  - `remember()` → `rem()`
+  - `derivedStateOf()` → `derived()`
+
+---
+
+### Phase 6
+
+* **Navigation & Routing**
+  - Navigation composable shortification
+  - Route definition helpers
+
+* **Theme & Styling**
+  - `MaterialTheme.colorScheme.primary` → `colors.p`
+  - `MaterialTheme.typography.bodyLarge` → `typo.h1`
+
+---
+
+### Phase 7
+
+* **Animation APIs**
+  - Animation syntax compression
+  - Transition helpers
+
+---
+
+### Phase 8
+
+* **Cross-platform support**
 
   * Compose
   * Flutter
@@ -352,7 +392,7 @@ col {
 
 ---
 
-### Phase 6
+### Phase 9
 
 * AI integration layer
 * Prompt → DSL → Code pipeline
