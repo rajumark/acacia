@@ -4,6 +4,7 @@ import com.acacia.resolver.DependencyResolver
 import com.acacia.resolver.AarExtractor
 import com.acacia.resolver.ExtractedJar
 import com.acacia.parser.SimpleParser
+import com.acacia.index.ApiIndex
 import org.gradle.api.DefaultTask
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
@@ -28,6 +29,7 @@ open class GenerateDslTask : DefaultTask() {
     private val dependencyResolver = DependencyResolver(project)
     private val aarExtractor = AarExtractor(project)
     private val simpleParser = SimpleParser()
+    private val apiIndex = ApiIndex()
     private val timestamp = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
 
     @TaskAction
@@ -104,11 +106,13 @@ open class GenerateDslTask : DefaultTask() {
 
         // Step 6: Modifier Parsing
         project.logger.lifecycle("Step 6: Parsing Modifier functions from extracted JARs...")
-        val allFunctions = simpleParser.parseJars(extractedJars)
-        val paddingFunctions = allFunctions.filter { it.name == "padding" }
+        val apiIndexMap = apiIndex.buildApiIndex(extractedJars)
+        val modifierFunctions = apiIndex.getModifierFunctions(apiIndexMap)
+        val renderedModifierFunctions = modifierFunctions.map { apiIndex.renderFunction(it) }
+        
         report.addStep("Step 6: Modifier Parsing",
-            "Parsed ${allFunctions.size} functions from ${extractedJars.size} JAR files",
-            allFunctions.map { "${it.name} from ${it.fileName} (${it.jarFile})" }
+            "Parsed all classes from ${extractedJars.size} JAR files, found ${modifierFunctions.size} Modifier functions",
+            renderedModifierFunctions
         )
 
         // Step 7: Summary
@@ -120,8 +124,8 @@ open class GenerateDslTask : DefaultTask() {
                 "AAR files: ${filteredArtifacts.count { it.isAar }}",
                 "JAR files: ${filteredArtifacts.count { it.isJar }}",
                 "Extracted JARs: ${extractedJars.size}",
-                "Functions found: ${allFunctions.size}",
-                "Padding functions found: ${allFunctions.filter { it.name == "padding" }.size}",
+                "Modifier functions found: ${modifierFunctions.size}",
+                "API index groups: ${apiIndexMap.size}",
                 "Cache directory: ${aarExtractor.getCacheDirectory().absolutePath}",
                 "Next phases: Naming Engine, Code generation"
             )
