@@ -1,6 +1,7 @@
 package com.acacia
 
 import com.acacia.resolver.DependencyResolver
+import com.acacia.resolver.AarExtractor
 import org.gradle.api.DefaultTask
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
@@ -23,6 +24,7 @@ open class GenerateDslTask : DefaultTask() {
     val debug: Property<Boolean> = project.objects.property(Boolean::class.java)
 
     private val dependencyResolver = DependencyResolver(project)
+    private val aarExtractor = AarExtractor(project)
     private val timestamp = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
 
     @TaskAction
@@ -88,15 +90,26 @@ open class GenerateDslTask : DefaultTask() {
             libraryFiles.map { "${it.name} (${it.length()} bytes)" }
         )
 
-        // Step 4: Summary
-        report.addStep("Step 4: Summary",
-            "Acacia plugin completed initial phase",
+        // Step 5: AAR Extraction
+        project.logger.lifecycle("Step 5: Extracting JARs from AAR files...")
+        val aarFiles = filteredArtifacts.filter { it.isAar }.map { it.file }
+        val extractedJars = aarExtractor.extractClassesJars(aarFiles)
+        report.addStep("Step 5: AAR Extraction",
+            "Extracted ${extractedJars.size} JARs from ${aarFiles.size} AAR files",
+            extractedJars.map { "${it.name}.jar (${it.size} bytes) from ${it.originalAar.name}" }
+        )
+
+        // Step 6: Summary
+        report.addStep("Step 6: Summary",
+            "Acacia plugin completed AAR extraction phase",
             listOf(
                 "Total artifacts found: ${composeArtifacts.size}",
                 "Valid library files: ${libraryFiles.size}",
                 "AAR files: ${filteredArtifacts.count { it.isAar }}",
                 "JAR files: ${filteredArtifacts.count { it.isJar }}",
-                "Next phases: AAR extraction, Modifier parsing, Code generation"
+                "Extracted JARs: ${extractedJars.size}",
+                "Cache directory: ${aarExtractor.getCacheDirectory().absolutePath}",
+                "Next phases: Modifier parsing, Code generation"
             )
         )
 
