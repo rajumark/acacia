@@ -169,7 +169,7 @@ open class GenerateDslTask : DefaultTask() {
                     function_name = fn.name,
                     extension_class = fn.receiver ?: "none",
                     extension_class_full = fn.receiverTypeFull ?: "none",
-                    return_type = cleanTypeForJson(fn.returnType),
+                    return_type = fn.returnType,
                     return_type_full = fn.returnTypeFull,
                     package_name = fn.packageName,
                     module = fn.module,
@@ -178,7 +178,7 @@ open class GenerateDslTask : DefaultTask() {
                     parameters = fn.params.map { param ->
                         ParameterJson(
                             name = param.name,
-                            type = cleanTypeForJson(param.type),
+                            type = param.type,
                             type_full = param.typeFull,
                             has_default_value = param.hasDefaultValue,
                             default_value = if (param.hasDefaultValue) inferDefaultValue(param.name, param.type) else null
@@ -194,30 +194,6 @@ open class GenerateDslTask : DefaultTask() {
         }
         
         jsonFile.writeText(json.encodeToString(jsonData))
-    }
-    
-    /**
-     * Cleans up type names for JSON output.
-     */
-    private fun cleanTypeForJson(type: String): String {
-        return when {
-            type.contains("androidx.compose.foundation.layout.Arrangement") -> "Arrangement"
-            type.contains("androidx.compose.ui.Alignment") -> "Alignment"
-            type.contains("androidx.compose.runtime.Composer") -> "Composer"
-            type.contains("kotlin.jvm.functions.Function") -> "Function"
-            type.contains("androidx.compose.ui.unit.Dp") -> "Dp"
-            type.contains("androidx.compose.ui.unit") -> "Unit"
-            type.contains("androidx.compose.ui.graphics.Color") -> "Color"
-            type.contains("androidx.compose.ui.graphics.Brush") -> "Brush"
-            type.contains("androidx.compose.ui.graphics.Shape") -> "Shape"
-            type.contains("androidx.compose.foundation.BorderStroke") -> "BorderStroke"
-            type.contains("androidx.compose.foundation.layout.PaddingValues") -> "PaddingValues"
-            type.contains("androidx.compose.ui.semantics.Role") -> "Role"
-            type.contains("androidx.compose.ui.Modifier") -> "Modifier"
-            type.startsWith("kotlin/") -> type.removePrefix("kotlin/")
-            type.startsWith("kotlinx/") -> type.removePrefix("kotlinx/")
-            else -> type.substringAfterLast(".").substringAfterLast("/")
-        }
     }
     
     /**

@@ -115,16 +115,16 @@ class DslCodeGenerator {
         
         // Set receiver if extension function
         if (fn.extension_class != "none") {
-            val receiverType = parseTypeName(fn.extension_class_full)
+            val receiverType = parseTypeName(fn.extension_class)
             funcBuilder.receiver(receiverType)
         }
         
         // Set return type
-        funcBuilder.returns(parseTypeName(fn.return_type_full))
+        funcBuilder.returns(parseTypeName(fn.return_type))
         
         // Add parameters
         fn.parameters.forEach { param ->
-            val paramType = parseTypeName(param.type_full)
+            val paramType = parseTypeName(param.type)
             // Sanitize parameter name to avoid KotlinPoet escaping issues
             val sanitizedName = sanitizeParameterName(param.name)
             val paramSpecBuilder = ParameterSpec.builder(sanitizedName, paramType)
