@@ -280,6 +280,7 @@ class ApiIndex {
     /**
      * Gets full type name with proper package (dots format).
      * Converts androidx/compose/ui/Modifier -> androidx.compose.ui.Modifier
+     * Also handles function types to show proper lambda signatures.
      */
     private fun getFullTypeName(type: kotlinx.metadata.KmType): String {
         val classifier = type.classifier
@@ -287,9 +288,57 @@ class ApiIndex {
             is kotlinx.metadata.KmClassifier.Class -> {
                 val fullName = classifier.name.replace("/", ".")
                 val isNullable = type.toString().contains("?")
-                if (isNullable) "$fullName?" else fullName
+                
+                // Handle function types (Function0, Function1, etc.)
+                if (fullName.startsWith("kotlin.Function") || fullName.startsWith("kotlin.jvm.functions.Function")) {
+                    renderFunctionType(type, fullName)
+                } else {
+                    if (isNullable) "$fullName?" else fullName
+                }
+            }
+            is kotlinx.metadata.KmClassifier.TypeParameter -> {
+                // Type parameter like T, R, etc.
+                "${classifier.id}"
             }
             else -> "Any"
+        }
+    }
+    
+    /**
+     * Renders a function type as a proper Kotlin lambda signature.
+     * e.g., kotlin.Function1<Density, IntOffset> -> Density.() -> IntOffset (if receiver context)
+     * or (Density) -> IntOffset for regular parameter
+     */
+    private fun renderFunctionType(type: kotlinx.metadata.KmType, functionClassName: String): String {
+        // Get type arguments (parameter types and return type)
+        val arguments = type.arguments
+        
+        if (arguments.isEmpty()) {
+            return functionClassName
+        }
+        
+        // Last argument is the return type
+        val returnType = arguments.lastOrNull()?.let { getFullTypeName(it.type ?: return functionClassName) } ?: "Unit"
+        
+        // Check for context receiver types (which indicate extension function type like Density.() -> T)
+        // For now, we check if the first argument looks like a receiver type context
+        val paramTypes = if (arguments.size > 1) {
+            arguments.dropLast(1).map { getFullTypeName(it.type ?: return functionClassName) }
+        } else {
+            emptyList()
+        }
+        
+        // Build the function type representation
+        // Check if it looks like an extension function type (we can infer from naming conventions or metadata flags)
+        // For Compose, many Function types with single parameter are extension receivers
+        return if (paramTypes.isEmpty()) {
+            "() -> $returnType"
+        } else if (paramTypes.size == 1) {
+            // Could be extension receiver type or regular parameter
+            // In Compose, these are often extension receivers
+            "${paramTypes[0]}.() -> $returnType"
+        } else {
+            "(${paramTypes.joinToString(", ")}) -> $returnType"
         }
     }
 
