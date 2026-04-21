@@ -2,6 +2,7 @@ package com.acacia.index
 
 import com.acacia.parser.SimpleFunction
 import com.acacia.resolver.ExtractedJar
+import kotlinx.metadata.declaresDefaultValue
 import kotlinx.metadata.jvm.KotlinClassMetadata
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.ClassVisitor
@@ -103,7 +104,7 @@ class ApiIndex {
                             name = fn.name,
                             receiver = fn.receiverParameterType?.let { renderType(it) },
                             params = fn.valueParameters.map {
-                                Param(it.name ?: "param", renderType(it.type))
+                                Param(it.name ?: "param", renderType(it.type), it.declaresDefaultValue)
                             },
                             returnType = renderType(fn.returnType),
                             source = "FileFacade ($aarName)"
@@ -123,7 +124,7 @@ class ApiIndex {
                             name = fn.name,
                             receiver = fn.receiverParameterType?.let { renderType(it) },
                             params = fn.valueParameters.map {
-                                Param(it.name ?: "param", renderType(it.type))
+                                Param(it.name ?: "param", renderType(it.type), it.declaresDefaultValue)
                             },
                             returnType = renderType(fn.returnType),
                             source = "Class ($aarName)"
@@ -336,10 +337,42 @@ class ApiIndex {
     fun renderFunction(fn: ApiFunction): String {
         val receiver = fn.receiver?.let { "$it." } ?: ""
         val params = fn.params.joinToString(", ") {
-            "${it.name}: ${cleanType(it.type)}"
+            val defaultValue = if (it.hasDefaultValue) {
+                // Try to infer common default values based on parameter name and type
+                inferDefaultValue(it.name, it.type)
+            } else ""
+            "${it.name}: ${cleanType(it.type)}$defaultValue"
         }
         val returnType = cleanReturnType(fn.returnType, fn.receiver)
         return "fun $receiver${fn.name}($params): $returnType"
+    }
+
+    /**
+     * Infers common default values for Compose parameters.
+     * Note: Actual default values aren't stored in metadata, so we infer based on conventions.
+     */
+    private fun inferDefaultValue(paramName: String, type: String): String {
+        return when {
+            // Dp parameters often default to 0.dp
+            type.contains("Dp") && (paramName == "start" || paramName == "top" || paramName == "end" || paramName == "bottom" || paramName == "all" || paramName == "horizontal" || paramName == "vertical") -> " = 0.dp"
+            type.contains("Dp") && paramName == "padding" -> " = 0.dp"
+            // Float fraction parameters often default to 1f
+            type == "Float" && paramName.contains("fraction") -> " = 1f"
+            // Boolean flags often default to false
+            type == "Boolean" -> " = false"
+            // Alignment parameters
+            type.contains("Alignment") -> " = Alignment.Center"
+            // PaddingValues often defaults to PaddingValues()
+            type.contains("PaddingValues") -> " = PaddingValues()"
+            // Brush/Color can default to null or specific values
+            type.contains("Brush") -> " = null"
+            // Generic "enabled" flags
+            paramName == "enabled" -> " = true"
+            // Animation specs
+            type.contains("FiniteAnimationSpec") -> " = spring()"
+            // Default placeholder - indicates default exists but we don't know the value
+            else -> " = ..."
+        }
     }
 
     /**
@@ -398,5 +431,6 @@ data class ApiFunction(
  */
 data class Param(
     val name: String,
-    val type: String
+    val type: String,
+    val hasDefaultValue: Boolean = false
 )
