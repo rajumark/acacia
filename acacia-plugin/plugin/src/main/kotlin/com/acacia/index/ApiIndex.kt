@@ -7,6 +7,7 @@ import kotlinx.metadata.jvm.KotlinClassMetadata
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.AnnotationVisitor
+import org.objectweb.asm.MethodVisitor
 import org.objectweb.asm.Opcodes
 
 /**
@@ -45,8 +46,11 @@ class ApiIndex {
                             println("DEBUG: Found PaddingKt class: ${entry.name}")
                         }
                         
+                        // Extract package name from class file path (e.g., androidx/compose/foundation/layout/PaddingKt.class)
+                        val packageName = extractPackageFromClassPath(entry.name)
+                        
                         val bytes = jar.getInputStream(entry).readBytes()
-                        val classFunctions = parseClass(bytes, aarName)
+                        val classFunctions = parseClass(bytes, aarName, packageName)
                         
                         // Debug logging for PaddingKt results
                         if (entry.name.contains("PaddingKt")) {
@@ -64,13 +68,28 @@ class ApiIndex {
     }
 
     /**
-     * Parses a single class and extracts all functions using Kotlin metadata.
+     * Extracts package name from class file path.
+     * Example: androidx/compose/foundation/layout/PaddingKt.class -> androidx.compose.foundation.layout
      */
-    private fun parseClass(bytes: ByteArray, aarName: String): List<ApiFunction> {
+    private fun extractPackageFromClassPath(classPath: String): String {
+        return classPath
+            .removeSuffix(".class")
+            .substringBeforeLast("/")
+            .replace("/", ".")
+    }
+
+    /**
+     * Parses a single class and extracts all functions using Kotlin metadata.
+     * Also extracts method annotations from bytecode using ASM.
+     */
+    private fun parseClass(bytes: ByteArray, aarName: String, packageName: String): List<ApiFunction> {
         return try {
+            // Extract method annotations from bytecode
+            val methodAnnotations = extractMethodAnnotations(bytes)
+            
             val metadata = extractMetadata(bytes)
             if (metadata != null) {
-                parseKotlinMetadata(metadata, aarName)
+                parseKotlinMetadata(metadata, aarName, methodAnnotations, packageName)
             } else {
                 println("DEBUG: No metadata found for class")
                 emptyList()
@@ -82,9 +101,66 @@ class ApiIndex {
     }
 
     /**
-     * Parses Kotlin metadata to extract real function signatures.
+     * Extracts method annotations from bytecode using ASM.
+     * Returns map of methodName -> list of annotation descriptors.
      */
-    private fun parseKotlinMetadata(metadata: KotlinClassMetadata, aarName: String): List<ApiFunction> {
+    private fun extractMethodAnnotations(bytes: ByteArray): Map<String, List<String>> {
+        val annotations = mutableMapOf<String, MutableList<String>>()
+        try {
+            val classReader = ClassReader(bytes)
+            val visitor = object : ClassVisitor(Opcodes.ASM9) {
+                private var currentMethodName: String? = null
+                private val currentMethodAnnotations = mutableListOf<String>()
+                
+                override fun visitMethod(
+                    access: Int,
+                    name: String,
+                    descriptor: String,
+                    signature: String?,
+                    exceptions: Array<String>?
+                ): MethodVisitor? {
+                    // Skip constructors and synthetic methods
+                    if (name == "<init>" || name == "<clinit>") {
+                        return null
+                    }
+                    currentMethodName = name
+                    currentMethodAnnotations.clear()
+                    return object : MethodVisitor(Opcodes.ASM9) {
+                        override fun visitAnnotation(descriptor: String, visible: Boolean): AnnotationVisitor? {
+                            // Convert Landroidx/compose/runtime/Stable; -> androidx.compose.runtime.Stable
+                            val annotationClass = descriptor
+                                .removePrefix("L")
+                                .removeSuffix(";")
+                                .replace("/", ".")
+                            currentMethodAnnotations.add(annotationClass)
+                            return null
+                        }
+                        
+                        override fun visitEnd() {
+                            if (currentMethodAnnotations.isNotEmpty()) {
+                                annotations[name] = currentMethodAnnotations.toMutableList()
+                            }
+                        }
+                    }
+                }
+            }
+            classReader.accept(visitor, 0)
+        } catch (e: Exception) {
+            println("DEBUG: Error extracting method annotations: ${e.message}")
+        }
+        return annotations
+    }
+
+    /**
+     * Parses Kotlin metadata to extract real function signatures.
+     * Correlates with bytecode method annotations.
+     */
+    private fun parseKotlinMetadata(
+        metadata: KotlinClassMetadata, 
+        aarName: String, 
+        methodAnnotations: Map<String, List<String>> = emptyMap(),
+        packageName: String
+    ): List<ApiFunction> {
         return try {
             when (metadata) {
                 is KotlinClassMetadata.FileFacade -> {
@@ -99,15 +175,28 @@ class ApiIndex {
                         println("DEBUG: Has receiver: ${firstFunction.receiverParameterType != null}")
                     }
                     
+                    val moduleName = extractModuleName(aarName)
                     functions.map { fn ->
+                        // Get annotations for this function (correlate by name)
+                        val annotations = methodAnnotations[fn.name] ?: emptyList()
                         ApiFunction(
                             name = fn.name,
                             receiver = fn.receiverParameterType?.let { renderType(it) },
+                            receiverTypeFull = fn.receiverParameterType?.let { getFullTypeName(it) },
                             params = fn.valueParameters.map {
-                                Param(it.name ?: "param", renderType(it.type), it.declaresDefaultValue)
+                                Param(
+                                    name = it.name ?: "param", 
+                                    type = renderType(it.type), 
+                                    typeFull = getFullTypeName(it.type),
+                                    hasDefaultValue = it.declaresDefaultValue
+                                )
                             },
                             returnType = renderType(fn.returnType),
-                            source = "FileFacade ($aarName)"
+                            returnTypeFull = getFullTypeName(fn.returnType),
+                            source = "FileFacade ($aarName)",
+                            module = moduleName,
+                            annotations = annotations,
+                            packageName = packageName
                         )
                     }
                 }
@@ -119,15 +208,28 @@ class ApiIndex {
                         println("DEBUG: Class with ${functions.size} functions")
                     }
                     
+                    val moduleName = extractModuleName(aarName)
                     functions.map { fn ->
+                        // Get annotations for this function (correlate by name)
+                        val annotations = methodAnnotations[fn.name] ?: emptyList()
                         ApiFunction(
                             name = fn.name,
                             receiver = fn.receiverParameterType?.let { renderType(it) },
+                            receiverTypeFull = fn.receiverParameterType?.let { getFullTypeName(it) },
                             params = fn.valueParameters.map {
-                                Param(it.name ?: "param", renderType(it.type), it.declaresDefaultValue)
+                                Param(
+                                    name = it.name ?: "param", 
+                                    type = renderType(it.type), 
+                                    typeFull = getFullTypeName(it.type),
+                                    hasDefaultValue = it.declaresDefaultValue
+                                )
                             },
                             returnType = renderType(fn.returnType),
-                            source = "Class ($aarName)"
+                            returnTypeFull = getFullTypeName(fn.returnType),
+                            source = "Class ($aarName)",
+                            module = moduleName,
+                            annotations = annotations,
+                            packageName = packageName
                         )
                     }
                 }
@@ -143,7 +245,7 @@ class ApiIndex {
     }
 
     /**
-     * Renders KmType to readable string.
+     * Renders KmType to readable string (short name for display).
      */
     private fun renderType(type: kotlinx.metadata.KmType): String {
         val classifier = type.classifier
@@ -173,6 +275,22 @@ class ApiIndex {
             }
         }
         return result
+    }
+
+    /**
+     * Gets full type name with proper package (dots format).
+     * Converts androidx/compose/ui/Modifier -> androidx.compose.ui.Modifier
+     */
+    private fun getFullTypeName(type: kotlinx.metadata.KmType): String {
+        val classifier = type.classifier
+        return when (classifier) {
+            is kotlinx.metadata.KmClassifier.Class -> {
+                val fullName = classifier.name.replace("/", ".")
+                val isNullable = type.toString().contains("?")
+                if (isNullable) "$fullName?" else fullName
+            }
+            else -> "Any"
+        }
     }
 
     /**
@@ -332,9 +450,21 @@ class ApiIndex {
     }
 
     /**
-     * Renders function signature properly.
+     * Extracts the module name from AAR filename.
+     * Examples: foundation.aar -> foundation, ui.aar -> ui
+     */
+    private fun extractModuleName(aarName: String): String {
+        return aarName.removeSuffix(".aar").removeSuffix("-1.13.0")
+    }
+
+    /**
+     * Renders function signature properly with module source.
      */
     fun renderFunction(fn: ApiFunction): String {
+        val moduleTag = "[${fn.module}]"
+        val annotations = if (fn.annotations.isNotEmpty()) {
+            fn.annotations.joinToString(" ") { "@$it" } + " "
+        } else ""
         val receiver = fn.receiver?.let { "$it." } ?: ""
         val params = fn.params.joinToString(", ") {
             val defaultValue = if (it.hasDefaultValue) {
@@ -344,7 +474,7 @@ class ApiIndex {
             "${it.name}: ${cleanType(it.type)}$defaultValue"
         }
         val returnType = cleanReturnType(fn.returnType, fn.receiver)
-        return "fun $receiver${fn.name}($params): $returnType"
+        return "$moduleTag ${annotations}fun $receiver${fn.name}($params): $returnType  // package: ${fn.packageName}"
     }
 
     /**
@@ -421,9 +551,14 @@ class ApiIndex {
 data class ApiFunction(
     val name: String,
     val receiver: String?,
+    val receiverTypeFull: String? = null,
     val params: List<Param>,
     val returnType: String,
-    val source: String
+    val returnTypeFull: String = "Any",
+    val source: String,
+    val module: String = "unknown",
+    val annotations: List<String> = emptyList(),
+    val packageName: String = "unknown"
 )
 
 /**
@@ -432,5 +567,6 @@ data class ApiFunction(
 data class Param(
     val name: String,
     val type: String,
+    val typeFull: String = "Any",
     val hasDefaultValue: Boolean = false
 )
