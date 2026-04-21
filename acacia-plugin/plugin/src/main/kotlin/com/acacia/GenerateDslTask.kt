@@ -57,8 +57,8 @@ open class GenerateDslTask : DefaultTask() {
             // Execute the complete pipeline for modifiers
             val modifierFunctions = executePipelineWithFallbacks(isDebug)
             
-            // Execute the composable pipeline (temporarily disabled)
-            val composableFunctions = emptyList<ComposableFunction>()
+            // Execute the composable pipeline
+            val composableFunctions = executeComposablePipeline(isDebug)
             
             // Generate the modifier DSL file
             val modifierFile = generateDslFile(modifierFunctions, isDebug)

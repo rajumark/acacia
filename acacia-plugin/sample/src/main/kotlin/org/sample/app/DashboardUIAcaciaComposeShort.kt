@@ -15,6 +15,10 @@ import com.acacia.generated.fmw
 import com.acacia.generated.fmh
 import com.acacia.generated.fms
 import com.acacia.generated.p
+import com.acacia.generated.B
+import com.acacia.generated.C
+import com.acacia.generated.R
+import com.acacia.generated.Sp
 
 @Composable
 fun DashboardUIAcaciaComposeShort() {
@@ -42,7 +46,7 @@ fun DashboardUIAcaciaComposeShort() {
                 color = Color(0xFF1565C0)
             )
             
-            Spacer(modifier = Modifier.p(8.dp))
+            Sp()
             
             Row(
                 modifier = Modifier.fmw(1f),
@@ -60,7 +64,7 @@ fun DashboardUIAcaciaComposeShort() {
                             text = "Layout Functions",
                             style = MaterialTheme.typography.titleMedium
                         )
-                        Text("fmw(), fmh(), fms(), bg(), p()")
+                        Text("fmw(), fmh(), fms(), bg(), p(), B(), Sp()")
                     }
                 }
                 
@@ -81,7 +85,7 @@ fun DashboardUIAcaciaComposeShort() {
                 }
             }
             
-            Spacer(modifier = Modifier.p(8.dp))
+            Sp()
             
             Card(
                 modifier = Modifier.fmw(1f)
@@ -93,7 +97,7 @@ fun DashboardUIAcaciaComposeShort() {
                         text = "Acacia DSL Code Example:",
                         style = MaterialTheme.typography.titleMedium
                     )
-                    Spacer(modifier = Modifier.p(4.dp))
+                    Sp()
                     Text(
                         text = """
                             Column(
