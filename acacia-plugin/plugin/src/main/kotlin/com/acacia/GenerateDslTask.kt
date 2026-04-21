@@ -2,6 +2,8 @@ package com.acacia
 
 import com.acacia.resolver.DependencyResolver
 import com.acacia.resolver.AarExtractor
+import com.acacia.resolver.ExtractedJar
+import com.acacia.parser.SimpleParser
 import org.gradle.api.DefaultTask
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
@@ -25,6 +27,7 @@ open class GenerateDslTask : DefaultTask() {
 
     private val dependencyResolver = DependencyResolver(project)
     private val aarExtractor = AarExtractor(project)
+    private val simpleParser = SimpleParser()
     private val timestamp = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
 
     @TaskAction
@@ -99,22 +102,37 @@ open class GenerateDslTask : DefaultTask() {
             extractedJars.map { "${it.name}.jar (${it.size} bytes) from ${it.originalAar.name}" }
         )
 
-        // Step 6: Summary
-        report.addStep("Step 6: Summary",
-            "Acacia plugin completed AAR extraction phase",
+        // Step 6: Modifier Parsing
+        project.logger.lifecycle("Step 6: Parsing Modifier functions from extracted JARs...")
+        val allFunctions = simpleParser.parseJars(extractedJars)
+        val paddingFunctions = allFunctions.filter { it.name == "padding" }
+        report.addStep("Step 6: Modifier Parsing",
+            "Parsed ${allFunctions.size} functions from ${extractedJars.size} JAR files",
+            allFunctions.map { "${it.name} from ${it.fileName} (${it.jarFile})" }
+        )
+
+        // Step 7: Summary
+        report.addStep("Step 7: Summary",
+            "Acacia plugin completed Modifier parsing phase",
             listOf(
                 "Total artifacts found: ${composeArtifacts.size}",
                 "Valid library files: ${libraryFiles.size}",
                 "AAR files: ${filteredArtifacts.count { it.isAar }}",
                 "JAR files: ${filteredArtifacts.count { it.isJar }}",
                 "Extracted JARs: ${extractedJars.size}",
+                "Functions found: ${allFunctions.size}",
+                "Padding functions found: ${allFunctions.filter { it.name == "padding" }.size}",
                 "Cache directory: ${aarExtractor.getCacheDirectory().absolutePath}",
-                "Next phases: Modifier parsing, Code generation"
+                "Next phases: Naming Engine, Code generation"
             )
         )
 
         return report
     }
+
+    /**
+     * Saves the build report to file.
+     */
 
     /**
      * Saves the build report to file.
