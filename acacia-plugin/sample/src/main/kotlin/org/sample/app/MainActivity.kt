@@ -5,6 +5,9 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.background
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -12,10 +15,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowInsetsControllerCompat
-import com.acacia.generated.bg
-import com.acacia.generated.mw
-import com.acacia.generated.mh
-import com.acacia.generated.p
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -28,14 +27,17 @@ class MainActivity : ComponentActivity() {
                 
                 Column(
                     modifier = Modifier
-                        .mw().fmh()
-                        .bg(Color(0xFFF5F5F5))
+                        .fillMaxWidth().fillMaxHeight()
+                        .background(
+                            brush = Brush.horizontalGradient(listOf(Color(0xFFF5F5F5))), 
+                            shape = RectangleShape
+                        )
                 ) {
                     // Toggle buttons
                     Row(
                         modifier = Modifier
-                            .mw()
-                            .p(16.dp),
+                            .fillMaxWidth()
+                            .padding(16.dp),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Button(
@@ -60,13 +62,13 @@ class MainActivity : ComponentActivity() {
                     // Content area
                     Box(
                         modifier = Modifier
-                            .mw()
+                            .fillMaxWidth()
                             .weight(1f)
                     ) {
                         if (showStandard) {
                             DashboardUIStandardCompose()
                         } else {
-                            DashboardUIAcaciaCompose()
+                            DashboardUIAcaciaComposeShort()
                         }
                     }
                 }

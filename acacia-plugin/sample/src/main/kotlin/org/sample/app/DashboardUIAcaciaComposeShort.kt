@@ -1,131 +1,112 @@
 package org.sample.app
 
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.background
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.runtime.Composable
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import com.acacia.generated.*
-import com.acacia.generated.Cl  // Cl = Color
-import com.acacia.generated.D   // D = Dp
-import com.acacia.generated.Al  // Al = Alignment
-import com.acacia.generated.Arr // Arr = Arrangement
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+import com.acacia.generated.bg
+import com.acacia.generated.fmw
+import com.acacia.generated.fmh
+import com.acacia.generated.fms
 
-/**
- * Demo of short composable wrappers + short modifiers + short type aliases.
- * 
- * Generated short composables:
- * - C() = Column(), R() = Row(), B() = Box()
- * - T() = Text(), Btn() = Button(), Cd() = Card()
- * - etc.
- * 
- * Generated type aliases:
- * - Cl = Color, D = Dp, Sh = Shape
- * - Arr = Arrangement, Al = Alignment
- * - M = Modifier, etc.
- */
 @Composable
 fun DashboardUIAcaciaComposeShort() {
-    // Using short composable wrappers C(), B(), T(), Btn(), Cd(), etc.
-    B(
-        modifier = M  // M = Modifier
-            .fms()
-            .p(16.D)  // D = Dp
-            .bg(Cl.White)  // Cl = Color
+    Box(
+        modifier = Modifier
+            .fms(1f)
+            .padding(16.dp)
+            .bg(
+                Brush.horizontalGradient(
+                    colors = listOf(Color(0xFFE3F2FD), Color(0xFFBBDEFB))
+                ),
+                RoundedCornerShape(12.dp),
+                0f
+            )
+            .padding(16.dp)
     ) {
-        C(
-            modifier = M.fmw(),
-            horizontalAlignment = Al.CenterHorizontally  // Al = Alignment
+        Column(
+            modifier = Modifier
+                .fmw(1f)
+                .fmh(1f)
         ) {
-            // Short Text composable
-            T(
-                text = "Dashboard with Short DSL",
-                style = MaterialTheme.typography.headlineMedium
+            Text(
+                text = "Acacia DSL Dashboard",
+                style = MaterialTheme.typography.headlineMedium,
+                color = Color(0xFF1565C0)
             )
             
-            Sp() // Short Spacer
+            Spacer(modifier = Modifier.padding(8.dp))
             
-            // Short Card composable
-            Cd(
-                modifier = M
-                    .fmw()
-                    .p(16.D),
-                shape = RoundedCornerShape(8.D)
+            Row(
+                modifier = Modifier.fmw(1f),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                C {
-                    T("Card Content")
-                    T("More content here")
+                Card(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fmw(1f)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp)
+                    ) {
+                        Text(
+                            text = "Layout Functions",
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                        Text("fmw(), fmh(), fms(), bg()")
+                    }
+                }
+                
+                Card(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fmw(1f)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp)
+                    ) {
+                        Text(
+                            text = "Background",
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                        Text("bg(brush, shape, param)")
+                    }
                 }
             }
             
-            Sp()
+            Spacer(modifier = Modifier.padding(8.dp))
             
-            // Short Row composable
-            R(
-                modifier = M.fmw(),
-                horizontalArrangement = Arr.SpaceEvenly  // Arr = Arrangement
+            Card(
+                modifier = Modifier.fmw(1f)
             ) {
-                // Short Button composables
-                Btn(onClick = { }) {
-                    T("Save")
-                }
-                Btn(onClick = { }) {
-                    T("Cancel")
-                }
-            }
-            
-            Sp()
-            
-            // Short OutlinedTextField
-            OTF(
-                value = "",
-                onValueChange = { },
-                label = { T("Enter text") },
-                modifier = M.fmw()
-            )
-            
-            Sp()
-            
-            // Short LazyColumn
-            LC {
-                items(5) { index ->
-                    T("Item $index", modifier = M.p(8.D))
+                Column(
+                    modifier = Modifier.padding(16.dp)
+                ) {
+                    Text(
+                        text = "Acacia DSL Code Example:",
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                    Spacer(modifier = Modifier.padding(4.dp))
+                    Text(
+                        text = """
+                            Column(
+                                modifier = Modifier
+                                    .fmw(1f)
+                                    .fmh(1f)
+                                    .bg(brush, shape, 0f)
+                                    .padding(16.dp)
+                            )
+                        """.trimIndent(),
+                        style = MaterialTheme.typography.bodySmall
+                    )
                 }
             }
         }
     }
 }
-
-/**
- * Example: Complete transformation
- * 
- * BEFORE (Standard Compose):
- * ```
- * Column(
- *     modifier = Modifier.fillMaxWidth().padding(16.dp),
- *     horizontalAlignment = Alignment.CenterHorizontally
- * ) {
- *     Text("Title")
- *     Spacer(modifier = Modifier.height(8.dp))
- *     Card(modifier = Modifier.fillMaxWidth()) {
- *         Text("Content")
- *     }
- * }
- * ```
- * 
- * AFTER (Acacia Short DSL):
- * ```
- * C(
- *     modifier = M.fmw().p(16.D),
- *     horizontalAlignment = Al.CenterHorizontally
- * ) {
- *     T("Title")
- *     Sp()
- *     Cd(modifier = M.fmw()) {
- *         T("Content")
- *     }
- *     Btn(onClick = { }) { T("Save") }
- * }
- * 
- * // Cl = Color, D = Dp, M = Modifier, Al = Alignment
- * ```
- */

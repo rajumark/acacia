@@ -39,10 +39,17 @@ dependencies {
     implementation("org.ow2.asm:asm-util:9.6")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
     implementation("org.jetbrains.kotlinx:kotlinx-metadata-jvm:0.8.0")
+    
+    testImplementation("org.junit.jupiter:junit-jupiter:5.10.0")
+    testImplementation("org.jetbrains.kotlin:kotlin-test")
 }
 
 kotlin {
     jvmToolchain(libs.versions.gradle.jvmToolchain.get().toInt())
+}
+
+tasks.test {
+    useJUnitPlatform()
 }
 
 java {
@@ -53,6 +60,11 @@ java {
 signing {
     useGpgCmd()
     sign(publishing.publications)
+}
+
+// Disable signing for local builds
+tasks.withType<Sign>().configureEach {
+    onlyIf { !project.hasProperty("local") }
 }
 
 /*
