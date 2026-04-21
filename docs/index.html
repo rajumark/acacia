@@ -356,6 +356,126 @@ body.light .theme-toggle:hover{
 @media(max-width:768px){
   .code-row{grid-template-columns:1fr}
 }
+
+/* Progress Modal Styles */
+.modal-overlay{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.8);
+  z-index:2000;
+  align-items:center;
+  justify-content:center;
+  padding:var(--space-md);
+}
+
+.modal-overlay.active{
+  display:flex;
+}
+
+.modal-content{
+  background:var(--bg);
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:12px;
+  max-width:900px;
+  width:100%;
+  max-height:80vh;
+  display:flex;
+  flex-direction:column;
+  box-shadow:0 20px 60px rgba(0,0,0,0.5);
+}
+
+.modal-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:var(--space-md) var(--space-lg);
+  border-bottom:1px solid rgba(255,255,255,0.1);
+}
+
+.modal-title{
+  font-size:1.1rem;
+  font-weight:600;
+  color:var(--text);
+}
+
+.modal-close{
+  background:none;
+  border:none;
+  color:var(--muted);
+  font-size:1.5rem;
+  cursor:pointer;
+  padding:0;
+  width:32px;
+  height:32px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:6px;
+  transition:background 0.2s, color 0.2s;
+}
+
+.modal-close:hover{
+  background:rgba(255,255,255,0.1);
+  color:var(--text);
+}
+
+.modal-body{
+  padding:var(--space-md) var(--space-lg);
+  overflow-y:auto;
+  flex:1;
+  font-family:'JetBrains Mono', monospace;
+  font-size:0.8rem;
+  line-height:1.6;
+  color:var(--text);
+  white-space:pre-wrap;
+}
+
+.modal-body::-webkit-scrollbar{
+  width:8px;
+}
+
+.modal-body::-webkit-scrollbar-track{
+  background:transparent;
+}
+
+.modal-body::-webkit-scrollbar-thumb{
+  background:rgba(255,255,255,0.2);
+  border-radius:4px;
+}
+
+.modal-body::-webkit-scrollbar-thumb:hover{
+  background:rgba(255,255,255,0.3);
+}
+
+body.light .modal-overlay{
+  background:rgba(0,0,0,0.5);
+}
+
+body.light .modal-content{
+  background:var(--light-bg);
+  border-color:var(--light-border);
+}
+
+body.light .modal-header{
+  border-color:var(--light-border);
+}
+
+body.light .modal-body{
+  color:var(--light-text);
+}
+
+body.light .modal-close:hover{
+  background:rgba(0,0,0,0.1);
+}
+
+body.light .modal-body::-webkit-scrollbar-thumb{
+  background:rgba(0,0,0,0.2);
+}
+
+body.light .modal-body::-webkit-scrollbar-thumb:hover{
+  background:rgba(0,0,0,0.3);
+}
 </style>
 </head>
 
@@ -375,6 +495,7 @@ body.light .theme-toggle:hover{
     <button class="mobile-menu-btn" onclick="toggleMenu()">☰</button>
     <div class="nav-links">
       <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">🌙</button>
+      <a href="#" onclick="openProgressModal(); return false;">Progress</a>
       <a href="https://github.com/rajumark/acacia">GitHub</a>
     </div>
   </div>
@@ -461,6 +582,17 @@ Modifier
 
 </div>
 
+<!-- Progress Modal -->
+<div class="modal-overlay" id="progressModal" onclick="closeProgressModalOnOverlay(event)">
+  <div class="modal-content">
+    <div class="modal-header">
+      <span class="modal-title">Build Progress Report</span>
+      <button class="modal-close" onclick="closeProgressModal()">&times;</button>
+    </div>
+    <div class="modal-body" id="progressContent">Loading...</div>
+  </div>
+</div>
+
 <script>
 function copyCode(btn) {
   const codeBox = btn.parentElement;
@@ -534,6 +666,138 @@ function toggleMenu() {
   const navLinks = document.querySelector('.nav-links');
   navLinks.classList.toggle('active');
 }
+
+// Progress Modal
+const buildReportContent = `============================================================
+ACACIA PLUGIN BUILD REPORT
+============================================================
+Generated: 2026-04-21 17:10:03
+Project: sample
+
+Step 1: Resolve Dependencies
+----------------------------
+Found 15 Compose artifacts
+
+  - androidx.compose:activity-compose-1.13.0:1.13.0 (AAR)
+  - androidx.compose.foundation:foundation:unknown (AAR)
+  - androidx.compose.foundation:foundation-layout:unknown (AAR)
+  - androidx.compose:lifecycle-runtime-compose:unknown (AAR)
+  - androidx.compose:navigationevent-compose:unknown (AAR)
+  - androidx.compose:savedstate-compose:unknown (AAR)
+  - unknown:ui:unknown (AAR)
+  - unknown:ui-geometry:unknown (AAR)
+  - unknown:ui-graphics:unknown (AAR)
+  - unknown:ui-text:unknown (AAR)
+  - unknown:ui-tooling:unknown (AAR)
+  - unknown:ui-tooling-data:unknown (AAR)
+  - unknown:ui-tooling-preview:unknown (AAR)
+  - unknown:ui-unit:unknown (AAR)
+  - unknown:ui-util:unknown (AAR)
+
+Step 2: Filter Compose Artifacts
+--------------------------------
+Filtered to 15 valid artifacts
+
+  - activity-compose-1.13.0 (AAR)
+  - foundation (AAR)
+  - foundation-layout (AAR)
+  - lifecycle-runtime-compose (AAR)
+  - navigationevent-compose (AAR)
+  - savedstate-compose (AAR)
+  - ui (AAR)
+  - ui-geometry (AAR)
+  - ui-graphics (AAR)
+  - ui-text (AAR)
+  - ui-tooling (AAR)
+  - ui-tooling-data (AAR)
+  - ui-tooling-preview (AAR)
+  - ui-unit (AAR)
+  - ui-util (AAR)
+
+Step 3: Get Library Files (JARs and AARs)
+-----------------------------------------
+Collected 15 library files
+
+  - activity-compose-1.13.0.aar (144321 bytes)
+  - foundation.aar (4949218 bytes)
+  - foundation-layout.aar (546454 bytes)
+  - lifecycle-runtime-compose.aar (1051246 bytes)
+  - navigationevent-compose.aar (29998 bytes)
+  - savedstate-compose.aar (15893 bytes)
+  - ui.aar (5760687 bytes)
+  - ui-geometry.aar (59774 bytes)
+  - ui-graphics.aar (1695013 bytes)
+  - ui-text.aar (821594 bytes)
+  - ui-tooling.aar (177848 bytes)
+  - ui-tooling-data.aar (47226 bytes)
+  - ui-tooling-preview.aar (22131 bytes)
+  - ui-unit.aar (100767 bytes)
+  - ui-util.aar (22302 bytes)
+
+Step 5: AAR Extraction
+----------------------
+Extracted 15 JARs from 15 AAR files
+
+  - classes.jar (73923 bytes) from activity-compose-1.13.0.aar
+  - classes.jar (586605 bytes) from foundation-layout.aar
+  - classes.jar (4203227 bytes) from foundation.aar
+  - classes.jar (48347 bytes) from lifecycle-runtime-compose.aar
+  - classes.jar (27466 bytes) from navigationevent-compose.aar
+  - classes.jar (12538 bytes) from savedstate-compose.aar
+  - classes.jar (57026 bytes) from ui-geometry.aar
+  - classes.jar (726957 bytes) from ui-graphics.aar
+  - classes.jar (866344 bytes) from ui-text.aar
+  - classes.jar (45094 bytes) from ui-tooling-data.aar
+  - classes.jar (20339 bytes) from ui-tooling-preview.aar
+  - classes.jar (101388 bytes) from ui-unit.aar
+  - classes.jar (17781 bytes) from ui-util.aar
+  - classes.jar (183672 bytes) from ui-tooling.aar
+  - classes.jar (3344625 bytes) from ui.aar
+
+Step 6: Modifier Parsing
+------------------------
+Parsed all classes from 15 JAR files, found 343 Modifier functions
+
+Step 7: Summary
+---------------
+Acacia plugin completed Modifier parsing phase
+
+  - Total artifacts found: 15
+  - Valid library files: 15
+  - AAR files: 15
+  - JAR files: 0
+  - Extracted JARs: 15
+  - Modifier functions found: 343
+  - API index groups: 328
+  - Cache directory: /home/raju/Documents/pluginproj/acacia/acacia-plugin/sample/build/acacia/cache/extracted-jars
+  - Next phases: Naming Engine, Code generation
+
+============================================================
+END OF REPORT
+============================================================`;
+
+function openProgressModal() {
+  document.getElementById('progressContent').textContent = buildReportContent;
+  document.getElementById('progressModal').classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeProgressModal() {
+  document.getElementById('progressModal').classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+function closeProgressModalOnOverlay(event) {
+  if (event.target === document.getElementById('progressModal')) {
+    closeProgressModal();
+  }
+}
+
+document.addEventListener('keydown', function(event) {
+  if (event.key === 'Escape') {
+    closeProgressModal();
+  }
+});
 </script>
 
 </body>
