@@ -14,13 +14,14 @@ import com.acacia.generated.bg
 import com.acacia.generated.fmw
 import com.acacia.generated.fmh
 import com.acacia.generated.fms
+import com.acacia.generated.p
 
 @Composable
 fun DashboardUIAcaciaComposeShort() {
     Box(
         modifier = Modifier
             .fms(1f)
-            .padding(16.dp)
+            .p(16.dp)
             .bg(
                 Brush.horizontalGradient(
                     colors = listOf(Color(0xFFE3F2FD), Color(0xFFBBDEFB))
@@ -28,7 +29,7 @@ fun DashboardUIAcaciaComposeShort() {
                 RoundedCornerShape(12.dp),
                 0f
             )
-            .padding(16.dp)
+            .p(16.dp)
     ) {
         Column(
             modifier = Modifier
@@ -41,7 +42,7 @@ fun DashboardUIAcaciaComposeShort() {
                 color = Color(0xFF1565C0)
             )
             
-            Spacer(modifier = Modifier.padding(8.dp))
+            Spacer(modifier = Modifier.p(8.dp))
             
             Row(
                 modifier = Modifier.fmw(1f),
@@ -53,13 +54,13 @@ fun DashboardUIAcaciaComposeShort() {
                         .fmw(1f)
                 ) {
                     Column(
-                        modifier = Modifier.padding(16.dp)
+                        modifier = Modifier.p(16.dp)
                     ) {
                         Text(
                             text = "Layout Functions",
                             style = MaterialTheme.typography.titleMedium
                         )
-                        Text("fmw(), fmh(), fms(), bg()")
+                        Text("fmw(), fmh(), fms(), bg(), p()")
                     }
                 }
                 
@@ -69,7 +70,7 @@ fun DashboardUIAcaciaComposeShort() {
                         .fmw(1f)
                 ) {
                     Column(
-                        modifier = Modifier.padding(16.dp)
+                        modifier = Modifier.p(16.dp)
                     ) {
                         Text(
                             text = "Background",
@@ -80,19 +81,19 @@ fun DashboardUIAcaciaComposeShort() {
                 }
             }
             
-            Spacer(modifier = Modifier.padding(8.dp))
+            Spacer(modifier = Modifier.p(8.dp))
             
             Card(
                 modifier = Modifier.fmw(1f)
             ) {
                 Column(
-                    modifier = Modifier.padding(16.dp)
+                    modifier = Modifier.p(16.dp)
                 ) {
                     Text(
                         text = "Acacia DSL Code Example:",
                         style = MaterialTheme.typography.titleMedium
                     )
-                    Spacer(modifier = Modifier.padding(4.dp))
+                    Spacer(modifier = Modifier.p(4.dp))
                     Text(
                         text = """
                             Column(
@@ -100,7 +101,7 @@ fun DashboardUIAcaciaComposeShort() {
                                     .fmw(1f)
                                     .fmh(1f)
                                     .bg(brush, shape, 0f)
-                                    .padding(16.dp)
+                                    .p(16.dp)
                             )
                         """.trimIndent(),
                         style = MaterialTheme.typography.bodySmall

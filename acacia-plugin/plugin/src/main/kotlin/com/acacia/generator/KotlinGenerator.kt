@@ -83,14 +83,14 @@ class KotlinGenerator {
         val safeFunctions = functions.filter { function ->
             // Only include functions we know work well and have safe parameter types
             val safeFunctionNames = setOf(
-                "fillMaxWidth", "fillMaxHeight", "fillMaxSize", "background"
+                "fillMaxWidth", "fillMaxHeight", "fillMaxSize", "background", "padding"
             )
             safeFunctionNames.contains(function.name) && 
             !function.name.contains("-") && 
             !function.name.contains("_") &&
             // Only include functions with safe parameter types
             function.parameters.all { param ->
-                param.type in setOf("Float", "Brush", "Shape", "Color", "Dp")
+                param.type in setOf("Float", "Brush", "Shape", "Color", "Dp", "PaddingValues")
             }
         }
 
@@ -112,7 +112,7 @@ class KotlinGenerator {
 
         // Add parameters
         function.parameters.forEach { param ->
-            val paramSpec = buildParameterSpec(param)
+            val paramSpec = buildParameterSpec(param, function.name)
             funBuilder.addParameter(paramSpec)
         }
 
@@ -180,25 +180,14 @@ class KotlinGenerator {
                 val params = function.parameters
                 when (params.size) {
                     1 -> {
-                        if (params[0].type == "Dp" || params[0].type == "PaddingValues") {
-                            "return this.padding(${params[0].name})"
-                        } else {
-                            "return this" // Skip unknown parameter types
-                        }
+                        // Force single parameter padding to work regardless of parsed type
+                        "return this.padding(${params[0].name})"
                     }
                     2 -> {
-                        if (params.all { it.type == "Dp" }) {
-                            "return this.padding(horizontal = ${params[0].name}, vertical = ${params[1].name})"
-                        } else {
-                            "return this"
-                        }
+                        "return this.padding(horizontal = ${params[0].name}, vertical = ${params[1].name})"
                     }
                     4 -> {
-                        if (params.all { it.type == "Dp" }) {
-                            "return this.padding(start = ${params[0].name}, top = ${params[1].name}, end = ${params[2].name}, bottom = ${params[3].name})"
-                        } else {
-                            "return this"
-                        }
+                        "return this.padding(start = ${params[0].name}, top = ${params[1].name}, end = ${params[2].name}, bottom = ${params[3].name})"
                     }
                     else -> "return this"
                 }
@@ -239,8 +228,12 @@ class KotlinGenerator {
         }
     }
 
-    private fun buildParameterSpec(param: ModifierFunction.Parameter): ParameterSpec {
-        val typeName = resolveTypeName(param.type)
+    private fun buildParameterSpec(param: ModifierFunction.Parameter, functionName: String = ""): ParameterSpec {
+        val typeName = when {
+            // Override types for padding functions to fix parsing issues
+            functionName == "padding" -> dpClassName
+            else -> resolveTypeName(param.type)
+        }
         val paramBuilder = ParameterSpec.builder(param.name, typeName)
 
         // Add default value if present
