@@ -7,6 +7,7 @@ import com.acacia.parser.SimpleParser
 import com.acacia.index.ApiIndex
 import com.acacia.index.ApiFunction
 import com.acacia.index.Param
+import com.acacia.generator.DslCodeGenerator
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -57,10 +58,19 @@ open class GenerateDslTask : DefaultTask() {
             saveBuildReport(report)
             saveModifierFunctionsJson(modifierFunctions, report.reportPath)
             
+            // Step 8: Code Generation
+            project.logger.lifecycle("Step 8: Generating DSL wrapper code from JSON...")
+            val codeGenerator = DslCodeGenerator()
+            val jsonFile = File(report.reportPath + ".json")
+            val outputDir = File(project.buildDir, "generated/source/acacia/dsl")
+            codeGenerator.generateFromJson(jsonFile, outputDir)
+            project.logger.lifecycle("Generated DSL code at: ${outputDir.absolutePath}")
+            
             project.logger.lifecycle("========================================")
             project.logger.lifecycle("Acacia Plugin: DSL generation completed")
             project.logger.lifecycle("Report saved to: ${report.reportPath}")
             project.logger.lifecycle("JSON data saved to: ${report.reportPath}.json")
+            project.logger.lifecycle("DSL code generated at: ${outputDir.absolutePath}")
             project.logger.lifecycle("========================================")
         } catch (e: Exception) {
             project.logger.error("Acacia Plugin: Error during generation", e)
