@@ -28,9 +28,7 @@ class MainActivity : ComponentActivity() {
                         .padding(all = 12.dp)
                         .padding()
                         .padding(paddingValues = PaddingValues(16.dp))
-                ) {
-                    
-                }
+                ) {}
             }
         }
     }
