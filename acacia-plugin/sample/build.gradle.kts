@@ -14,8 +14,11 @@ android {
         versionCode = 1
         versionName = "1.0.0"
     }
-    // Note: Generated sources are automatically registered by the Acacia plugin
-    // via the Android Variant API - no manual sourceSets configuration needed
+    sourceSets {
+        getByName("main") {
+            java.srcDirs("build/generated/source/acacia")
+        }
+    }
 }
 
 kotlin {

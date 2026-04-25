@@ -70,7 +70,7 @@ open class GenerateDslTask : DefaultTask() {
             project.logger.lifecycle("Step 8: Generating DSL wrapper code from JSON...")
             val codeGenerator = DslCodeGenerator()
             val jsonFile = File(report.reportPath + ".json")
-            val outputDir = File(project.buildDir, "generated/source/acacia/dsl")
+            val outputDir = File(project.buildDir, "generated/source/acacia")
             codeGenerator.generateFromJson(jsonFile, outputDir)
             project.logger.lifecycle("Generated DSL code at: ${outputDir.absolutePath}")
             
