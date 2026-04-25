@@ -32,12 +32,12 @@ class DslCodeGenerator {
         // Group functions by package for organized file structure
         val functionsByPackage = jsonData.functions.groupBy { it.package_name }
         
-        functionsByPackage.forEach { (packageName, functions) ->
+        // Only generate files for foundation-layout package
+        functionsByPackage.filter { (packageName, _) -> 
+            packageName.contains("foundation.layout") 
+        }.forEach { (packageName, functions) ->
             generateFileForPackage(packageName, functions, outputDir)
         }
-        
-        // Generate main entry point
-        generateMainDslFile(jsonData.functions, outputDir)
     }
 
     /**

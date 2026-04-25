@@ -23,6 +23,10 @@ class ApiIndex {
         val allApiFunctions = mutableListOf<ApiFunction>()
         
         extractedJars.forEach { jar ->
+            // Only parse foundation-layout dependency
+            if (!jar.originalAar.name.contains("foundation-layout")) {
+                return@forEach
+            }
             val functions = parseAllClassesInJar(jar.jarFile, jar.originalAar.name)
             allApiFunctions.addAll(functions)
         }
@@ -40,6 +44,11 @@ class ApiIndex {
             java.util.jar.JarFile(jarFile).use { jar ->
                 jar.entries().toList()
                     .filter { it.name.endsWith(".class") && !it.name.contains("$") }
+                    .filter { entry -> 
+                        // Only process PaddingKt.class
+                        val simpleName = entry.name.substringAfterLast("/").removeSuffix(".class")
+                        simpleName == "PaddingKt"
+                    }
                     .forEach { entry ->
                         // Debug logging for PaddingKt
                         if (entry.name.contains("PaddingKt")) {

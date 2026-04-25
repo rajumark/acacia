@@ -15,9 +15,14 @@ class SimpleParser {
         
         extractedJars.forEach { extractedJar ->
             try {
+                // Only parse foundation-layout dependency
+                if (!extractedJar.jarFile.name.contains("foundation-layout")) {
+                    return@forEach
+                }
                 val classFiles = readJar(extractedJar.jarFile)
                 classFiles.forEach { classFile ->
-                    if (classFile.simpleName.contains("Kt")) {
+                    // Only process PaddingKt.class
+                    if (classFile.simpleName == "PaddingKt") {
                         val functionName = extractFunctionName(classFile.simpleName)
                         if (functionName != null) {
                             allFunctions.add(SimpleFunction(
