@@ -37,6 +37,14 @@ open class GenerateDslTask : DefaultTask() {
     private val simpleParser = SimpleParser()
     private val apiIndex = ApiIndex()
     private val timestamp = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+    
+    // Timing data class
+    data class StepTiming(
+        val stepName: String,
+        val durationMs: Long,
+        val cacheHit: Boolean = false,
+        val itemsProcessed: Int = 0
+    )
 
     @TaskAction
     fun generate() {
@@ -89,53 +97,76 @@ open class GenerateDslTask : DefaultTask() {
             reportPath = "${project.buildDir.absolutePath}/generated/source/acacia/acacia_build_report.txt"
         )
         
+        val timings = mutableListOf<StepTiming>()
         var modifierFunctions: List<ApiFunction> = emptyList()
 
         // Step 1: Resolve Dependencies
+        val step1Start = System.currentTimeMillis()
         project.logger.lifecycle("Step 1: Resolving dependencies...")
         val composeArtifacts = dependencyResolver.resolveComposeArtifacts()
+        val step1Duration = System.currentTimeMillis() - step1Start
+        timings.add(StepTiming("Resolve Dependencies", step1Duration, false, composeArtifacts.size))
         report.addStep("Step 1: Resolve Dependencies", 
-            "Found ${composeArtifacts.size} Compose artifacts",
+            "Found ${composeArtifacts.size} Compose artifacts (${step1Duration}ms)",
             composeArtifacts.map { "${it.group}:${it.name}:${it.version} (${if (it.isAar) "AAR" else "JAR"})" }
         )
 
         // Step 2: Filter Compose Artifacts
+        val step2Start = System.currentTimeMillis()
         project.logger.lifecycle("Step 2: Filtering Compose artifacts...")
         val filteredArtifacts = composeArtifacts.filter { it.isJar || it.isAar }
+        val step2Duration = System.currentTimeMillis() - step2Start
+        timings.add(StepTiming("Filter Compose Artifacts", step2Duration, false, filteredArtifacts.size))
         report.addStep("Step 2: Filter Compose Artifacts",
-            "Filtered to ${filteredArtifacts.size} valid artifacts",
+            "Filtered to ${filteredArtifacts.size} valid artifacts (${step2Duration}ms)",
             filteredArtifacts.map { "${it.name} (${if (it.isAar) "AAR" else "JAR"})" }
         )
 
         // Step 3: Get Library Files
+        val step3Start = System.currentTimeMillis()
         project.logger.lifecycle("Step 3: Getting library files...")
         val libraryFiles = filteredArtifacts.map { it.file }
+        val step3Duration = System.currentTimeMillis() - step3Start
+        timings.add(StepTiming("Get Library Files", step3Duration, false, libraryFiles.size))
         report.addStep("Step 3: Get Library Files (JARs and AARs)",
-            "Collected ${libraryFiles.size} library files",
+            "Collected ${libraryFiles.size} library files (${step3Duration}ms)",
             libraryFiles.map { "${it.name} (${it.length()} bytes)" }
         )
 
         // Step 5: AAR Extraction
+        val step5Start = System.currentTimeMillis()
         project.logger.lifecycle("Step 5: Extracting JARs from AAR files...")
         val aarFiles = filteredArtifacts.filter { it.isAar }.map { it.file }
-        val extractedJars = aarExtractor.extractClassesJars(aarFiles)
+        val extractedJars = aarExtractor.extractClassesJarsWithCacheInfo(aarFiles)
+        val cacheHits = extractedJars.count { it.fromCache }
+        val step5Duration = System.currentTimeMillis() - step5Start
+        timings.add(StepTiming("AAR Extraction", step5Duration, cacheHits > 0, extractedJars.size))
         report.addStep("Step 5: AAR Extraction",
-            "Extracted ${extractedJars.size} JARs from ${aarFiles.size} AAR files",
-            extractedJars.map { "${it.name}.jar (${it.size} bytes) from ${it.originalAar.name}" }
+            "Extracted ${extractedJars.size} JARs from ${aarFiles.size} AAR files (${step5Duration}ms, ${cacheHits} from cache)",
+            extractedJars.map { "${it.name}.jar (${it.size} bytes) from ${it.originalAar.name}${if (it.fromCache) " [CACHED]" else " [FRESH]"}" }
         )
 
         // Step 6: Modifier Parsing
+        val step6Start = System.currentTimeMillis()
         project.logger.lifecycle("Step 6: Parsing Modifier functions from extracted JARs...")
         val apiIndexMap = apiIndex.buildApiIndex(extractedJars)
         modifierFunctions = apiIndex.getModifierFunctions(apiIndexMap)
         val renderedModifierFunctions = modifierFunctions.map { apiIndex.renderFunction(it) }
+        val step6Duration = System.currentTimeMillis() - step6Start
+        timings.add(StepTiming("Modifier Parsing", step6Duration, false, modifierFunctions.size))
         
         report.addStep("Step 6: Modifier Parsing",
-            "Parsed all classes from ${extractedJars.size} JAR files, found ${modifierFunctions.size} Modifier functions",
+            "Parsed all classes from ${extractedJars.size} JAR files, found ${modifierFunctions.size} Modifier functions (${step6Duration}ms)",
             renderedModifierFunctions
         )
 
-        // Step 7: Summary
+        // Step 7: Summary with timing statistics
+        val totalDuration = timings.sumOf { it.durationMs }
+        val avgStepTime = totalDuration / timings.size
+        val slowestStep = timings.maxByOrNull { it.durationMs }
+        val fastestStep = timings.minByOrNull { it.durationMs }
+        val cacheHitsTotal = timings.count { it.cacheHit }
+        
         report.addStep("Step 7: Summary",
             "Acacia plugin completed Modifier parsing phase",
             listOf(
@@ -147,11 +178,32 @@ open class GenerateDslTask : DefaultTask() {
                 "Modifier functions found: ${modifierFunctions.size}",
                 "API index groups: ${apiIndexMap.size}",
                 "Cache directory: ${aarExtractor.getCacheDirectory().absolutePath}",
-                "Next phases: Naming Engine, Code generation"
+                "Next phases: Naming Engine, Code generation",
+                "",
+                "=== TIMING STATISTICS ===",
+                "Total processing time: ${totalDuration}ms (${formatDuration(totalDuration)})",
+                "Average step time: ${avgStepTime}ms (${formatDuration(avgStepTime)})",
+                "Slowest step: ${slowestStep?.stepName} (${slowestStep?.durationMs}ms)",
+                "Fastest step: ${fastestStep?.stepName} (${fastestStep?.durationMs}ms)",
+                "Cache hits: $cacheHitsTotal/${timings.size} steps",
+                "",
+                "=== STEP BREAKDOWN ===",
+                *timings.map { "${it.stepName}: ${it.durationMs}ms (${formatDuration(it.durationMs)})${if (it.cacheHit) " [CACHED]" else " [FRESH]"}" }.toTypedArray()
             )
         )
 
         return Pair(report, modifierFunctions)
+    }
+    
+    /**
+     * Formats duration in milliseconds to human-readable format.
+     */
+    private fun formatDuration(ms: Long): String {
+        return when {
+            ms < 1000 -> "${ms}ms"
+            ms < 60000 -> "${ms / 1000}.${(ms % 1000) / 100}s"
+            else -> "${ms / 60000}m ${(ms % 60000) / 1000}s"
+        }
     }
 
     /**

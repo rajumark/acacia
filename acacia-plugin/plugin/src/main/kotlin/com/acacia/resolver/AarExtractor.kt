@@ -15,6 +15,13 @@ class AarExtractor(private val project: Project) {
      * Extracts classes.jar from all AAR files.
      */
     fun extractClassesJars(aarFiles: List<File>): List<ExtractedJar> {
+        return extractClassesJarsWithCacheInfo(aarFiles)
+    }
+    
+    /**
+     * Extracts classes.jar from all AAR files with cache information.
+     */
+    fun extractClassesJarsWithCacheInfo(aarFiles: List<File>): List<ExtractedJar> {
         val extractedJars = mutableListOf<ExtractedJar>()
         
         // Ensure cache directory exists
@@ -51,9 +58,10 @@ class AarExtractor(private val project: Project) {
         val classesJarFile = File(aarCacheDir, "classes.jar")
         
         // Check if already extracted and up-to-date
-        if (classesJarFile.exists() && classesJarFile.lastModified() >= aarFile.lastModified()) {
+        val fromCache = classesJarFile.exists() && classesJarFile.lastModified() >= aarFile.lastModified()
+        if (fromCache) {
             project.logger.debug("Acacia: Using cached ${classesJarFile.name}")
-            return ExtractedJar(aarFile, classesJarFile)
+            return ExtractedJar(aarFile, classesJarFile, fromCache = true)
         }
 
         // Extract classes.jar from AAR
@@ -66,7 +74,7 @@ class AarExtractor(private val project: Project) {
                             input.copyTo(output)
                         }
                     }
-                    ExtractedJar(aarFile, classesJarFile)
+                    ExtractedJar(aarFile, classesJarFile, fromCache = false)
                 } else {
                     project.logger.warn("Acacia: No classes.jar found in ${aarFile.name}")
                     null
@@ -89,7 +97,8 @@ class AarExtractor(private val project: Project) {
  */
 data class ExtractedJar(
     val originalAar: File,
-    val jarFile: File
+    val jarFile: File,
+    val fromCache: Boolean = false
 ) {
     val size: Long get() = jarFile.length()
     val name: String get() = jarFile.nameWithoutExtension

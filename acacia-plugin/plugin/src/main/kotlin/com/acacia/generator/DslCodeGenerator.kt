@@ -169,19 +169,22 @@ class DslCodeGenerator {
             return ClassName("kotlin", "Function1") // Default to Function1 for simplicity
         }
         
+        // Sanitize type name to remove illegal characters
+        val sanitizedType = sanitizeTypeName(baseType)
+        
         // Handle regular class types
         return when {
-            baseType == "kotlin.Unit" || baseType == "Unit" -> if (isNullable) UNIT.copy(nullable = true) else UNIT
-            baseType == "kotlin.Boolean" || baseType == "Boolean" -> if (isNullable) BOOLEAN.copy(nullable = true) else BOOLEAN
-            baseType == "kotlin.Int" || baseType == "Int" -> if (isNullable) INT.copy(nullable = true) else INT
-            baseType == "kotlin.Long" || baseType == "Long" -> if (isNullable) LONG.copy(nullable = true) else LONG
-            baseType == "kotlin.Float" || baseType == "Float" -> if (isNullable) FLOAT.copy(nullable = true) else FLOAT
-            baseType == "kotlin.Double" || baseType == "Double" -> if (isNullable) DOUBLE.copy(nullable = true) else DOUBLE
-            baseType == "kotlin.String" || baseType == "String" -> if (isNullable) STRING.copy(nullable = true) else STRING
-            baseType == "kotlin.Any" || baseType == "Any" -> if (isNullable) ANY.copy(nullable = true) else ANY
-            baseType.contains(".") -> {
-                val packageName = baseType.substringBeforeLast(".")
-                val className = baseType.substringAfterLast(".")
+            sanitizedType == "kotlin.Unit" || sanitizedType == "Unit" -> if (isNullable) UNIT.copy(nullable = true) else UNIT
+            sanitizedType == "kotlin.Boolean" || sanitizedType == "Boolean" -> if (isNullable) BOOLEAN.copy(nullable = true) else BOOLEAN
+            sanitizedType == "kotlin.Int" || sanitizedType == "Int" -> if (isNullable) INT.copy(nullable = true) else INT
+            sanitizedType == "kotlin.Long" || sanitizedType == "Long" -> if (isNullable) LONG.copy(nullable = true) else LONG
+            sanitizedType == "kotlin.Float" || sanitizedType == "Float" -> if (isNullable) FLOAT.copy(nullable = true) else FLOAT
+            sanitizedType == "kotlin.Double" || sanitizedType == "Double" -> if (isNullable) DOUBLE.copy(nullable = true) else DOUBLE
+            sanitizedType == "kotlin.String" || sanitizedType == "String" -> if (isNullable) STRING.copy(nullable = true) else STRING
+            sanitizedType == "kotlin.Any" || sanitizedType == "Any" -> if (isNullable) ANY.copy(nullable = true) else ANY
+            sanitizedType.contains(".") -> {
+                val packageName = sanitizedType.substringBeforeLast(".")
+                val className = sanitizedType.substringAfterLast(".")
                 if (packageName.isEmpty() || className.isEmpty()) {
                     ANY
                 } else {
@@ -190,10 +193,33 @@ class DslCodeGenerator {
                 }
             }
             else -> {
-                val classNameObj = ClassName("kotlin", baseType)
+                val classNameObj = ClassName("kotlin", sanitizedType)
                 if (isNullable) classNameObj.copy(nullable = true) else classNameObj
             }
         }
+    }
+    
+    /**
+     * Sanitizes type names to remove illegal characters that KotlinPoet can't handle.
+     * Replaces forward slashes and other problematic characters with safe alternatives.
+     */
+    private fun sanitizeTypeName(typeName: String): String {
+        return typeName.replace("/", "_")
+                 .replace("$", "_dollar_")
+                 .replace("<", "_lt_")
+                 .replace(">", "_gt_")
+                 .replace("(", "_")
+                 .replace(")", "_")
+                 .replace("[", "_")
+                 .replace("]", "_")
+                 .replace("{", "_")
+                 .replace("}", "_")
+                 .replace(" ", "_")
+                 .replace(",", "_")
+                 .replace("?", "_q_")
+                 .replace("!", "_ex_")
+                 .replace(":", "_colon_")
+                 .replace(";", "_semicolon_")
     }
 
     /**
@@ -306,6 +332,8 @@ class DslCodeGenerator {
      */
     private fun sanitizeParameterName(name: String): String {
         return name.replace("->", "_to_")
+                 .replace("/", "_")
+                 .replace("$", "_dollar_")
                  .replace("<", "_lt_")
                  .replace(">", "_gt_")
                  .replace("(", "_")
@@ -317,6 +345,10 @@ class DslCodeGenerator {
                  .replace(" ", "_")
                  .replace(".", "_")
                  .replace(",", "_")
+                 .replace("?", "_q_")
+                 .replace("!", "_ex_")
+                 .replace(":", "_colon_")
+                 .replace(";", "_semicolon_")
     }
 }
 
