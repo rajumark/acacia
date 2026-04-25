@@ -23,13 +23,13 @@ class MainActivity : ComponentActivity() {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
+                        .padding(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 16.dp)
+                        .padding(horizontal = 8.dp, vertical = 8.dp)
+                        .padding(all = 12.dp)
                         .padding()
-                        .offset(offset = {
-                            IntOffset(1, 2)
-                        }),
-                    contentAlignment = Alignment.Center
+                        .padding(paddingValues = PaddingValues(16.dp))
                 ) {
-                    Text("Hello from Sample App!")
+                    
                 }
             }
         }
